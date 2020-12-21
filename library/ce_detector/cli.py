@@ -1,22 +1,41 @@
-"""Console script for ce_ddtertor."""
+# !/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
-import argparse
+"""Console script for ce_detector.
+@author: YangyangLi
+@contact:li002252@umn.edu
+@version: 0.0.1
+@license: MIT Licence
+@file: cli.py
+@time: 2020/12/21 6:01 PM
+"""
 import sys
+
+from annotator import Annotator
+from detector import JunctionDetector
+from utils import Timer, get_logger, get_parser
 
 
 def main():
-    """Console script for ce_ddtertor."""
-    parser = argparse.ArgumentParser(description='__doc__')
+    """ function to integrate the annotation usage
+    """
 
-    parser.add_argument('_', nargs='*')
+    log1 = get_logger('junction_detector', create_file=False)
+    log2 = get_logger('annotate_junctions', create_file=False)
 
-    args = parser.parse_args()
+    args = get_parser()
 
-    print("Arguments: " + str(args._))
-    print("Replace this message by putting your code into "
-          "ce_ddtertor.cli.main")
+    # detect junction reads
+    detector = JunctionDetector(args.input, args.out, args.reference,
+                                args.quality)
+    with Timer() as t:
+        junctionmap = detector.run(log1)
 
-    return 0
+    log1.info(f'FINISHED FIND JUNCTION CONSUMING {t.elapsed:.2f}s')
+    # annotate junction reads
+
+    annotator = Annotator(junctionmap, args.gffdb)
+    annotator.run(log2)
 
 
 if __name__ == "__main__":

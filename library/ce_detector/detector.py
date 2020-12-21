@@ -1,21 +1,18 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 """
+@author: YangyangLi
+@contact:li002252@umn.edu
+@version: 0.0.1
+@license: MIT Licence
+@file: detector.py
+@time: 2020/12/21 5:38 PM
 """
-from __future__ import annotations
 
-from collections import defaultdict
-
-import gffutils
-import numpy as np
 import pysam as ps
 
-from utils import get_logger, get_parser, Timer
-
-# TODO: Change annotate to a class
-
-# HardCode the information of chromosome because its name of two ref are not identical
+# HardCode the information of chromosome because its name of two ref are not identical  hg38
 CHROMS = {
     'chr1': 'NC_000001.11',
     'chr2': 'NC_000002.12',
@@ -146,8 +143,6 @@ class JunctionMap:
                 f.write(f'{read}\n')
 
 
-#                 print(f'{read[0]}\n')
-
 class JunctionDetector:
     """class for detecting junction reads and record position
     """
@@ -196,7 +191,7 @@ class JunctionDetector:
 
         return strand
 
-    def worker(self, bam_file, reference, chrom, quality, idn, junctionMap):
+    def worker(self, bam_file, reference, chrom, quality, idn, junctionmap):
         """ find junction reads and annotate slice site
 
         :param bam_file: handle of bam_file
@@ -204,14 +199,14 @@ class JunctionDetector:
         :param reference: handle of reference
         :type reference: instance
         :param chrom: chromosome
-        :type chrom: int
+        :type chrom: str
         :param quality: quality for filtering reads
         :type quality: int
         :param idn: identifier of reads
         :type idn: int
-        :param junctionMap: instance from junctionMap
-        :type junctionMap: instance
-        :return: instance from junctionMap
+        :param junctionmap: instance from junctionmap
+        :type junctionmap: instance
+        :return: instance from junctionmap
         :rtype: instance
         """
         # detect junction reads
@@ -230,21 +225,22 @@ class JunctionDetector:
             strand = self.check_strand(anchor, acceptor)
             read = Read(chrom, start, end, idn + 1, score, strand, anchor,
                         acceptor)
-            junctionMap.add_read(read)
+            junctionmap.add_read(read)
             #             line = f'{chrom}\t{start}\t{end}\t{idn+1}\t{score}\t{strand}\t{anchor}-{acceptor}'
 
             idn += 1
-        return junctionMap
+        return junctionmap
 
     def run(self, log):
-        """
-        :param log:
-        :type log:
-        :return:
-        :rtype:
+        """ detect junction reads and annotate slice site, write results to file
+
+        :param log: handler of logger
+        :type log: instance
+        :return: instance from junctionmap
+        :rtype: instance
         """
 
-        ID = 0
+        idn = 0
 
         #         output = open(self.output, 'w') # change
 
@@ -252,184 +248,19 @@ class JunctionDetector:
 
         bam = ps.AlignmentFile(self.bam_file)
 
-        junctionMap = JunctionMap()
+        junctionmap = JunctionMap()
 
         # write junction reads information
         log.info(
-            f'Junction Detector Start.\nParameters:\nReference: {self.reference}\nQuality Threshold: {self.quality}\nOutput: {self.output}\n'
+            f'Junction Detector Start.\nParameters:\nReference: {self.reference}\nQuality Threshold: {self.quality}\nOutput: {self.output}\n '
         )
         for chrom in CHROMS.keys():  # change CHROMS
-            self.worker(bam, reference, chrom, self.quality, ID, junctionMap)
+            self.worker(bam, reference, chrom, self.quality, idn, junctionmap)
 
             log.info(f'{chrom} FINSHED. NO PROBLEM FOUND')
 
         if self.output:
             header = f'chrom\tstart\tend\tidn\tscore\tstrand\tsplice_site'
-            junctionMap.write2file(self.output, header)
+            junctionmap.write2file(self.output, header)  # write to file
 
-        return junctionMap
-
-
-class Annotator:
-    """annotate junction reads"""
-
-    def __init__(self, junctionMap, database):
-        """Constructor for Annotator"""
-        self.junctionMap = junctionMap
-        self.database = database
-
-    @staticmethod
-    def detect_property(start, end, junction_list):
-        """ detect type of slice, number of skipped donors and number of skipped acceptors
-
-        type of slice including D A DA N NDA
-
-        :param start: start of junction read
-        :type start: int
-        :param end: end of junction read
-        :type end: int
-        :param junction_list: gene list of junction reads
-        :type junction_list: list
-        :return: type of slice, number of skipped donors, number of skipped acceptors
-        """
-        known_donors = junction_list[:, 0]
-        known_acceptors = junction_list[:, 1]
-
-        donors_skipped = ((start + 1 < known_donors) & (known_donors < end)).sum()
-
-        acceptors_skipped = ((start + 1 < known_acceptors) &
-                             (known_acceptors < end)).sum()
-
-        if [start + 1, end] in junction_list.tolist():
-
-            reads_type = 'DA'
-
-        elif (start + 1 in known_donors) and (end in known_acceptors):
-
-            reads_type = 'NDA'
-
-        elif (start + 1 in known_donors) and (end not in known_acceptors):
-
-            reads_type = 'D'
-
-        elif (start +
-              1 not in junction_list[:, 0]) and (end in junction_list[:, 1]):
-
-            reads_type = 'A'
-
-        else:
-
-            reads_type = 'N'
-
-        return reads_type, donors_skipped, acceptors_skipped
-
-    def annotate_junction(self, read, result: 'list', db, output=None):
-        """annotate junction reads and write results to file
-
-        :param read: junction read
-        :type read: instance
-        :param result: gene list used for annotation
-        :type result: list
-        :param db: database of annotation file
-        :type db: instance of file
-        :param output: filename of output. Defaults to None
-        :type output: str
-        """
-        chrom = read.chrom
-        start, end = read.start, read.end
-        region = f'{CHROMS[chrom]}:{start}-{end}'
-
-        gene_list = []
-
-        for gene in db.features_of_type(('gene'), limit=region):
-
-            gene_list.append(gene.id)
-            # new gene
-            if gene.id not in result:
-                # transcript
-
-                for transcript in db.children(
-                        gene,
-                        level=1,
-                        featuretype=('primary_transcript', 'transcript',
-                                     'mRNA')):  # mRNA may drop out
-
-                    # find all position of introns for every gene known junctions
-                    for junction in db.interfeatures(
-                            db.children(transcript,
-                                        level=1,
-                                        featuretype='exon',
-                                        order_by='start'),
-                            new_featuretype='intron'):
-                        result[gene.id].append([junction.start, junction.end])
-
-                if len(result[gene.id]) >= 1:  # drop gene with only one exon
-
-                    result[gene.id] = np.unique(result[gene.id], axis=0)
-
-                else:
-                    result.pop(gene.id)
-                    gene_list.pop()
-
-        # annotate junctions reads
-
-        for gene in gene_list:
-
-            junction_list = result[gene]
-
-            reads_type, donors_skipped, acceptors_skipped = self.detect_property(
-                start, end, junction_list)
-            #         read.type = reads_type
-            #     output.write(f'{reads_information}\t{reads_type}\t{gene}\n')
-            if output:
-                output.write(
-                    f'{read}\t{reads_type}\t{donors_skipped}\t{acceptors_skipped}\t{gene}\n'
-                )
-
-    def run(self, logger, output='ohoannnotate_junction.bed'):
-        """ main function used to annotate junction reads
-
-        pick all genes covered by one junction read and annotate all of them:
-        type of slice, number of skipped donors and number of skipped acceptors
-
-        :param logger: logging handler
-        :type logger: instance
-        :param output: filename of outpput. Defaults to None
-        :type output: str
-        """
-        db = gffutils.FeatureDB(self.database)
-
-        result = defaultdict(list)
-
-        logger.info(f'Begin to annotate junctions!')
-
-        with open(output, 'w') as f:
-            for index, read in enumerate(self.junctionMap):
-                #         if index < 10:
-                self.annotate_junction(read, result, self.database, f)
-
-
-def main():
-    """ function to integrate the annotation usage
-    """
-
-    log = get_logger('junction_detector', create_file=False)
-    log2 = get_logger('annotate_junctions', create_file=False)
-
-    args = get_parser()
-
-    # detect junction reads
-    detector = JunctionDetector(args.input, args.out, args.reference,
-                                args.quality)
-    with Timer() as t:
-        junctionMap = detector.run(log)
-
-    log.info(f'FINISHED FIND JUNCTION CONSUMING {t.elapsed:.2f}s')
-    # annotate junction reads
-
-    annotator = Annotator(junctionMap, args.gffdb)
-    annotator.run()
-
-
-if __name__ == '__main__':
-    main()
+        return junctionmap
