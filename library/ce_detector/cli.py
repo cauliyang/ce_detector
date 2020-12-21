@@ -4,7 +4,6 @@
 """Console script for ce_detector.
 @author: YangyangLi
 @contact:li002252@umn.edu
-@version: 0.0.1
 @license: MIT Licence
 @file: cli.py
 @time: 2020/12/21 6:01 PM

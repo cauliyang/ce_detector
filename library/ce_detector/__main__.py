@@ -4,7 +4,6 @@
 """ script for running in the terminal
 @author: YangyangLi
 @contact:li002252@umn.edu
-@version: 0.0.1
 @license: MIT Licence
 @file: __main__.py
 @time: 2020/12/21 5:02 PM

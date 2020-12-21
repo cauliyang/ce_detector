@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
+"""class for annotating junction reads
 """
 from __future__ import annotations
 
