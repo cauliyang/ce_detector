@@ -64,7 +64,7 @@ class Annotator:
         :param end: end of junction read
         :type end: int
         :param junction_list: gene list of junction reads
-        :type junction_list: list
+        :type junction_list: numpy.array
         :return: type of slice, number of skipped donors, number of skipped acceptors
         """
         known_donors = junction_list[:, 0]
@@ -98,13 +98,13 @@ class Annotator:
 
         return reads_type, donors_skipped, acceptors_skipped
 
-    def annotate_junction(self, read, result: 'list', db, output=None):
+    def annotate_junction(self, read, result, db, output=None):
         """annotate junction reads and write results to file
 
         :param read: junction read
         :type read: instance
         :param result: gene list used for annotation
-        :type result: list
+        :type result: defaultdict[Any, list]
         :param db: database of annotation file
         :type db: instance of file
         :param output:  file handler of output. Defaults to None
