@@ -1,4 +1,5 @@
 # mac system file 
+data*
 .vscode* 
 .DS*
 .idea/*

@@ -1,6 +1,10 @@
 import argparse
+import json
 import logging
 import time
+from os.path import join, dirname
+
+import importlib_resources
 
 
 class Timer:
@@ -159,3 +163,15 @@ def get_parser():
     args = parser.parse_args()
 
     return args
+
+
+def get_json():
+    """ get information of chromosome stored in json file
+    :return: chromosome values
+    :rtype: dict
+    """
+    if __package__:
+        path = join(importlib_resources.files(__package__).as_posix(), 'chromosome.json')
+    else:
+        path = join(dirname(__file__), 'chromosome.json')
+    return json.load(open(path))
