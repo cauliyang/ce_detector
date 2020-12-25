@@ -156,7 +156,7 @@ def get_parser():
     # get filename of database of gtf file
     parser.add_argument('-d',
                         '--gffdb',
-                        help='The annoated file',
+                        help='The annotated file',
                         required=True,
                         type=str)
 
