@@ -11,7 +11,8 @@
 
 import pysam as ps
 from utils import get_json
-# HardCode the information of chromosome because its name of two ref are not identical  hg38
+
+# change keys to be consist with chromosome's values
 CHROMS = get_json()['chr2hg38']
 
 POSITIVE_SITE, NIGATIVE_SITE = [('GT', 'AG'), ('AT', 'AC'), ('GC', 'AG')], \
@@ -230,7 +231,7 @@ class JunctionDetector:
         for chrom in CHROMS.keys():  # change CHROMS
             self.worker(bam, reference, chrom, self.quality, idn, junctionmap)
 
-            log.info(f'{chrom} FINSHED. NO PROBLEM FOUND')
+            # log.info(f'{chrom} FINSHED. NO PROBLEM FOUND')
 
         if self.output:
             header = f'chrom\tstart\tend\tidn\tscore\tstrand\tsplice_site'
