@@ -10,10 +10,10 @@
 """
 
 import pysam as ps
-from utils import get_json
+from utils import get_yaml
 
 # change keys to be consist with chromosome's values
-CHROMS = get_json()['chr2hg38']
+CHROMS = get_yaml()['chr2hg38']
 
 POSITIVE_SITE, NIGATIVE_SITE = [('GT', 'AG'), ('AT', 'AC'), ('GC', 'AG')], \
                                [('CT', 'AC'), ('GT', 'AT'), ('CT', 'GC')]
@@ -122,10 +122,10 @@ class JunctionDetector:
     """
 
     def __init__(self,
-                 bam_file=None,
-                 output=None,
-                 reference=None,
-                 quality=None):
+                 bam_file,
+                 reference,
+                 quality=0,
+                 output=None):
         """
         :param bam_file: bam file
         :type bam_file: str
@@ -185,8 +185,8 @@ class JunctionDetector:
         """
         # detect junction reads
         junction_regions = bam_file.find_introns([
-            r for r in bam_file.fetch(contig=chrom)
-            if r.mapping_quality > quality  # chrom
+            r for r in bam_file.fetch(contig=chrom)  ### chrom
+            if r.mapping_quality > quality
         ])
 
         # annotate slice sites
@@ -215,8 +215,6 @@ class JunctionDetector:
         """
 
         idn = 0
-
-        #         output = open(self.output, 'w') # change
 
         reference = ps.FastaFile(self.reference)
 

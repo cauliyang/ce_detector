@@ -6,12 +6,12 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from utils import get_json
+from utils import get_yaml
 import gffutils
 import numpy as np
 
 # HardCode the information of chromosome because its name of two ref are not identical
-CHROMS = get_json()['chr2hg38']
+CHROMS = get_yaml()['chr2hg38']
 
 
 class Annotator:
@@ -135,7 +135,7 @@ class Annotator:
                     f'{read}\t{reads_type}\t{donors_skipped}\t{acceptors_skipped}\t{gene}\n'
                 )
 
-    def run(self, logger, output='ohoannnotate_junction.bed'):
+    def run(self, logger, output):
         """ main function used to annotate junction reads
 
         pick all genes covered by one junction read and annotate all of them:

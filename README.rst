@@ -1,32 +1,37 @@
 ===========
-ce-detector
+ce_detector
 ===========
 
 
-.. image:: https://img.shields.io/pypi/v/ce_ddtertor.svg
-        :target: https://pypi.python.org/pypi/ce_ddtertor
+.. image:: https://img.shields.io/pypi/v/ce_detector.svg
+   :target: https://pypi.python.org/pypi/ce_detector
 
-.. image:: https://img.shields.io/travis/cauliyang /ce_ddtertor.svg
-        :target: https://travis-ci.com/cauliyang /ce_ddtertor
+.. image:: https://img.shields.io/travis/li002252/ce_detector.svg
+   :target: https://travis-ci.com/li002252/ce_detector
 
-.. image:: https://readthedocs.org/projects/ce-ddtertor/badge/?version=latest
-        :target: https://ce-ddtertor.readthedocs.io/en/latest/?badge=latest
-        :alt: Documentation Status
-
-
+.. image:: https://readthedocs.org/projects/ce-detector/badge/?version=latest
+   :target: https://ce-detector.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
 
 
-Detect Cripytic Exons 
+.. image:: https://pyup.io/repos/github/li002252/ce_detector/shield.svg
+   :target: https://pyup.io/repos/github/li002252/ce_detector/
+   :alt: Updates
+
+
+A program used to detect Cryptic Exon
 
 
 * Free software: MIT license
-* Documentation: https://ce-ddtertor.readthedocs.io.
+* Documentation: https://ce-detector.readthedocs.io.
 
 
 Features
 --------
 
-* TODO
+* Detect Junction Reads
+* Annotate Junction Reads
+* Detect Cryptic Exon
 
 Credits
 -------
@@ -35,36 +40,3 @@ This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypack
 
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
-
-
-
-This is a simple example::
-
-    import math
-    print('jaa')
-
-
-
-This is another example:
-::
-
-    import math
-    print('another')
-
-
-.. code-block:: html
-   :linenos:
-
-   <h1>code block example</h1>
-
-
-.. literalinclude:: slice.py
-    :linenos:
-    :language: python
-    :lines: 1, 3-5
-    :start-after: 3
-    :end-before: 5
-
-
-.. currentmodule:: sample
-.. autofunction:: square

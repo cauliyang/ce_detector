@@ -25,7 +25,7 @@ def main():
     args = get_parser()
 
     # detect junction reads
-    detector = JunctionDetector(args.input, args.out, args.reference,
+    detector = JunctionDetector(args.input, args.reference,
                                 args.quality)
     with Timer() as t:
         junctionmap = detector.run(log1)
@@ -34,7 +34,7 @@ def main():
     # annotate junction reads
 
     annotator = Annotator(junctionmap, args.gffdb)
-    annotator.run(log2)
+    annotator.run(log2, args.out)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,11 @@
+include AUTHORS.rst
+include CONTRIBUTING.rst
+include HISTORY.rst
 include LICENSE
 include README.rst
-include chromosome.json
+
+recursive-include tests *
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
-
+recursive-exclude docs/source *
+recursive-include docs *.rst conf.py Makefile make.bat *.jpg *.png *.gif

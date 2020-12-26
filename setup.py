@@ -13,17 +13,32 @@ from setuptools import find_packages, setup, Command
 
 # Package meta-data.
 NAME = 'ce-detector'
-DESCRIPTION = 'My short description for my project.'
-URL = 'https://github.com/me/myproject'
+DESCRIPTION = 'A program used to detect Cryptic Exon.'
+URL = 'https://github.com/cauliyang/ce_detector/'
 EMAIL = 'li002252@umn.edu'
 AUTHOR = 'YangyangLi'
 REQUIRES_PYTHON = '>=3.6.0'
 VERSION = '0.1.0'
 
+
+with open('HISTORY.rst') as history_file:
+    history = history_file.read()
+
+setup_requirements = ['pytest-runner', ]
+
+test_requirements = ['pytest>=3', ]
+
+
 # What packages are required for this module to be executed?
-REQUIRED = [
-    # 'requests', 'maya', 'records',
-]
+
+here = os.path.abspath(os.path.dirname(__file__))
+try:
+    with io.open(os.path.join(here, 'requirements.txt'), encoding='utf-8') as f:
+        REQUIRED = [line.strip() for line in f]
+except FileNotFoundError:
+    REQUIRED = [
+        # 'requests', 'maya', 'records',
+    ]
 
 # What packages are optional?
 EXTRAS = {
@@ -35,7 +50,7 @@ EXTRAS = {
 # Except, perhaps the License and Trove Classifiers!
 # If you do change the License, remember to change the Trove Classifier for that!
 
-here = os.path.abspath(os.path.dirname(__file__))
+# here = os.path.abspath(os.path.dirname(__file__))
 
 # Import the README and use it as the long-description.
 # Note: this will only work if 'README.md' is present in your MANIFEST.in file!
@@ -97,7 +112,7 @@ setup(
     name=NAME,
     version=about['__version__'],
     description=DESCRIPTION,
-    long_description=long_description,
+    long_description=long_description + '\n\n' + history,
     long_description_content_type='text/markdown',
     author=AUTHOR,
     author_email=EMAIL,
@@ -107,11 +122,14 @@ setup(
     # If your package is a single module, use this instead of 'packages':
     # py_modules=['mypackage'],
 
-    # entry_points={
-    #     'console_scripts': ['mycli=mymodule:cli'],
-    # },
+    entry_points={
+        'console_scripts': ['ce_detector=ce_detector.cli:main'],
+    },
     install_requires=REQUIRED,
     extras_require=EXTRAS,
+    setup_requires=[],
+    test_suite='tests',
+    tests_require=test_requirements,
     include_package_data=True,
     license='MIT',
     classifiers=[
@@ -128,4 +146,5 @@ setup(
     cmdclass={
         'upload': UploadCommand,
     },
+    zip_safe=False,
 )

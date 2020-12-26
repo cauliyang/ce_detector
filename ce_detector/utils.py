@@ -1,5 +1,5 @@
 import argparse
-import json
+import yaml
 import logging
 import time
 from os.path import join, dirname
@@ -143,8 +143,8 @@ def get_parser():
     # get filename of junction reads
     parser.add_argument('-o',
                         '--out',
-                        help='The output file.',
-                        default='junctions.bed',
+                        help='The output file of annotated junction reads.',
+                        default='annotated_junction_reads.bed',
                         type=str)
     # get quality for filtering junction reads
     parser.add_argument(
@@ -165,13 +165,13 @@ def get_parser():
     return args
 
 
-def get_json():
-    """ get information of chromosome stored in json file
+def get_yaml():
+    """ get information of chromosome stored in yaml file
     :return: chromosome values
     :rtype: dict
     """
     if __package__:
-        path = join(importlib_resources.files(__package__).as_posix(), 'chromosome.json')
+        path = join(importlib_resources.files(__package__).as_posix(), 'chromosome.yml')
     else:
-        path = join(dirname(__file__), 'chromosome.json')
-    return json.load(open(path))
+        path = join(dirname(__file__), 'chromosome.yml')
+    return yaml.load(open(path), Loader=yaml.BaseLoader)
