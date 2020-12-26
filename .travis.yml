@@ -2,33 +2,40 @@
 
 language: python
 python:
-  - 3.8
-  - 3.7
-  - 3.6
-  - 3.5
+    - 3.8
+    - 3.7
+    - 3.6
+    - 3.5
 
 # Command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install:
     - pip install -U tox-travis
-    - pip install -r requirements.txt --use-mirrors
-    - pip install safety
+    - pip install -r requirements.txt
+#    - pip install safety # use pyup
 
 # Command to run tests, e.g. python setup.py test
 script:
     - tox
-    - safety check --key=<API KEY>
+#    - safety check --key=<API KEY> # use pyup
 
 # Assuming you have installed the travis-ci CLI tool, after you
 # create the Github repo and add it to Travis, run the
 # following command to finish PyPI deployment setup:
 # $ travis encrypt --add deploy.password
+
+
 deploy:
-  provider: pypi
-  distributions: sdist bdist_wheel
-  user: YangyangLi
-  password:
-    secure: PLEASE_REPLACE_ME
-  on:
-    tags: true
-    repo: cauliyang/ce_detector
-    python: 3.8
+    provider: pypi
+    distributions: sdist bdist_wheel
+    user: __token__
+    password:
+        secure: QYNuT2RcqztP5C2PLyUfMlduaEzgk+ctk4zkkwRRjMBX7OlZ0mNNjHqCu1jqYGAN+2SBl+Q6x1lgIEuUFNePJDVJUYdA70ab0NtXkvyzP0T6NLlwBtSSjmxbIoaVjb4JYXS8ChwfRbppogzX7Wh2PKRitYO6l1j+oyJQZCxa6EXntuowV7hJicnmdMIileRUyZU+XgDWfAsIpeItKy4SbG+PmlH4XFssjyNxhrL3uTM3bqay9PQg31ss+hAjsP6zUwoDCWm/XS9EqV8XUD8DIPLkmosJ3TcGXcmaIGUZxEBvqsmOvnvCf/wX6xz0bcTbelq+wiAeCZb9D11I2MkcPfCQIRLdSdI2y3n657cfAcxAdJcFP5dXzgxZzgWGaDHmmYZ40PoJgW2iXATYrYctzW0I/0v9cddtrvtnTkbP+r5tHLZ0Wd7BEKg1ZwPguVGtGbH8H45b96NH8XsLq44YaSwK3xD+QP4+PDJgh+IXaABJXUcUyOcWSq8o/DMjCMeULbA2oQkD2n5MSgN41YKm8Coo1NYE+UI/zHFbGF+hbfoU21hIiCOAH1oKOAQrIfGzjNVX54/btyO8aBHODTcAj9LVNV0GEW6rj9a+I+s/c+NpJe8R21RYbUMlfhZwsozXUFMbFGWXwGWG6Vdhz/IF+w5sF2vxCE4G3AH1hJAudXk=
+    server: https://pypi.org/legacy/
+
+    on:
+        branch: master
+        tags: true
+        repo: cauliyang/ce_detector
+        python: 3.8
+
+

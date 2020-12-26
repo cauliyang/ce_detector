@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 """class for annotating junction reads
 """
 from __future__ import annotations
 
 from collections import defaultdict
-from utils import get_yaml
+
 import gffutils
 import numpy as np
+
+from utils import get_yaml
 
 # HardCode the information of chromosome because its name of two ref are not identical
 CHROMS = get_yaml()['chr2hg38']
@@ -46,8 +47,7 @@ class Annotator:
 
         donors_skipped = ((start + 1 < known_donors) & (known_donors < end)).sum()
 
-        acceptors_skipped = ((start + 1 < known_acceptors) &
-                             (known_acceptors < end)).sum()
+        acceptors_skipped = ((start + 1 < known_acceptors) & (known_acceptors < end)).sum()
 
         if [start + 1, end] in junction_list.tolist():
 
@@ -61,8 +61,7 @@ class Annotator:
 
             reads_type = 'D'
 
-        elif (start +
-              1 not in junction_list[:, 0]) and (end in junction_list[:, 1]):
+        elif (start + 1 not in junction_list[:, 0]) and (end in junction_list[:, 1]):
 
             reads_type = 'A'
 
@@ -97,19 +96,15 @@ class Annotator:
             if gene.id not in result:
                 # transcript
 
-                for transcript in db.children(
-                        gene,
-                        level=1,
-                        featuretype=('primary_transcript', 'transcript',
-                                     'mRNA')):  # mRNA may drop out
+                for transcript in db.children(gene, level=1, featuretype=('primary_transcript', 'transcript',
+                                                                          'mRNA')):  # mRNA may drop out
 
                     # find all position of introns for every gene known junctions
-                    for junction in db.interfeatures(
-                            db.children(transcript,
-                                        level=1,
-                                        featuretype='exon',
-                                        order_by='start'),
-                            new_featuretype='intron'):
+                    for junction in db.interfeatures(db.children(transcript,
+                                                                 level=1,
+                                                                 featuretype='exon',
+                                                                 order_by='start'),
+                                                     new_featuretype='intron'):
                         result[gene.id].append([junction.start, junction.end])
 
                 if len(result[gene.id]) >= 1:  # drop gene with only one exon
@@ -126,14 +121,11 @@ class Annotator:
 
             junction_list = result[gene]
 
-            reads_type, donors_skipped, acceptors_skipped = self.detect_property(
-                start, end, junction_list)
+            reads_type, donors_skipped, acceptors_skipped = self.detect_property(start, end, junction_list)
             #         read.type = reads_type
             #     output.write(f'{reads_information}\t{reads_type}\t{gene}\n')
             if output:
-                output.write(
-                    f'{read}\t{reads_type}\t{donors_skipped}\t{acceptors_skipped}\t{gene}\n'
-                )
+                output.write(f'{read}\t{reads_type}\t{donors_skipped}\t{acceptors_skipped}\t{gene}\n')
 
     def run(self, logger, output):
         """ main function used to annotate junction reads

@@ -20,14 +20,16 @@ AUTHOR = 'YangyangLi'
 REQUIRES_PYTHON = '>=3.6.0'
 VERSION = '0.1.0'
 
-
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-setup_requirements = ['pytest-runner', ]
+setup_requirements = [
+    'pytest-runner',
+]
 
-test_requirements = ['pytest>=3', ]
-
+test_requirements = [
+    'pytest>=3',
+]
 
 # What packages are required for this module to be executed?
 
@@ -121,7 +123,6 @@ setup(
     packages=find_packages(exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
     # If your package is a single module, use this instead of 'packages':
     # py_modules=['mypackage'],
-
     entry_points={
         'console_scripts': ['ce_detector=ce_detector.cli:main'],
     },

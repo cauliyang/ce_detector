@@ -7,7 +7,7 @@ ce_detector
    :target: https://pypi.python.org/pypi/ce_detector
 
 .. image:: https://img.shields.io/travis/li002252/ce_detector.svg
-   :target: https://travis-ci.com/li002252/ce_detector
+   :target: https://travis-ci.com/cauliyang/ce_detector
 
 .. image:: https://readthedocs.org/projects/ce-detector/badge/?version=latest
    :target: https://ce-detector.readthedocs.io/en/latest/?badge=latest
@@ -32,6 +32,43 @@ Features
 * Detect Junction Reads
 * Annotate Junction Reads
 * Detect Cryptic Exon
+
+Installation
+------------
+
+Using pip::bash
+
+   $ pip install ce-detector
+
+Using conda::bash
+
+   $ pip install ce-detector
+
+Usage example
+-------------
+
+_For more examples and usage, please refer to the [Wiki][wiki]._
+
+Development setup
+-----------------
+
+
+Describe how to install all development dependencies and how to run an automated test-suite of some kind. Potentially do this for multiple platforms.::bash
+
+   $ pip install -r requirement_dev.txt
+
+
+
+Contributing
+------------
+
+1. Fork it (<https://github.com/cauliyang/ce_detector/fork>)
+2. Create your feature branch (`git checkout -b feature/fooBar`)
+3. Commit your changes (`git commit -am 'Add some fooBar'`)
+4. Push to the branch (`git push origin feature/fooBar`)
+5. Create a new Pull Request
+
+
 
 Credits
 -------
