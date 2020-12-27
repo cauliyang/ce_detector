@@ -20,7 +20,7 @@ POSITIVE_SITE, NIGATIVE_SITE = [('GT', 'AG'), ('AT', 'AC'), ('GC', 'AG')], \
 
 
 class Read:
-    """ build a read class for storing information of junction reads
+    """ build a read class for storing information of every junction read
     """
     __slots__ = [
         'chrom', 'start', 'end', 'idn', 'score', 'strand', 'anchor',
