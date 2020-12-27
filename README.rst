@@ -36,11 +36,11 @@ Features
 Installation
 ------------
 
-Using pip::bash
+Using pip::
 
    $ pip install ce-detector
 
-Using conda::bash
+Using conda::
 
    $ pip install ce-detector
 
@@ -53,7 +53,7 @@ Development setup
 -----------------
 
 
-Describe how to install all development dependencies and how to run an automated test-suite of some kind. Potentially do this for multiple platforms.::bash
+Describe how to install all development dependencies and how to run an automated test-suite of some kind. Potentially do this for multiple platforms.::
 
    $ pip install -r requirement_dev.txt
 

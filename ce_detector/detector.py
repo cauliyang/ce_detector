@@ -10,7 +10,7 @@
 """
 
 import pysam as ps
-from utils import get_yaml
+from .utils import get_yaml
 
 # change keys to be consist with chromosome's values
 CHROMS = get_yaml()['chr2hg38']
