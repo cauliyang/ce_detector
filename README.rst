@@ -6,8 +6,8 @@ ce_detector
 .. image:: https://img.shields.io/pypi/v/ce_detector.svg
    :target: https://pypi.python.org/pypi/ce_detector
 
-.. image:: https://img.shields.io/travis/li002252/ce_detector.svg
-   :target: https://travis-ci.com/cauliyang/ce_detector
+.. image:: https://travis-ci.com/cauliyang/ce_detector.svg?token=ny2TT3zEDqv1DqKs8ocf&branch=master
+    :target: https://travis-ci.com/cauliyang/ce_detector
 
 .. image:: https://readthedocs.org/projects/ce-detector/badge/?version=latest
    :target: https://ce-detector.readthedocs.io/en/latest/?badge=latest
