@@ -15,7 +15,7 @@ sphinx:
 
 # optionally build your docs in additional formats such as pdf
 formats:
-  - all
+  - pdf
 
 # optionally set the version of python and requirements required to build your docs
 python:
