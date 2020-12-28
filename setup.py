@@ -124,7 +124,7 @@ setup(
     # If your package is a single module, use this instead of 'packages':
     # py_modules=['mypackage'],
     entry_points={
-        'console_scripts': ['ce_detector=ce_detector.cli:main'],
+        'console_scripts': ['ce_detector=ce_detector.re_cli.py:main'],
     },
     install_requires=REQUIRED,
     extras_require=EXTRAS,
