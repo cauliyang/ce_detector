@@ -5,7 +5,7 @@ from click.testing import CliRunner
 import sys
 
 sys.path.append('..')
-from ce_detector import cli
+# from ce_detector import cli
 
 #
 # class TestCli:
