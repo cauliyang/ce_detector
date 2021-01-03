@@ -4,8 +4,7 @@ __author__ = """YangyangLi"""
 __email__ = 'li002252@umn.edu '
 __version__ = '0.1.0'
 
-# from . import utils
 # from .annotator import Annotator
 # from .ce_scanner import Scanner
-# from .detector import Read, JunctionMap, JunctionDetector
-from .cli import cli
+# from .detector import JunctionDetector
+# from .cli import cli
