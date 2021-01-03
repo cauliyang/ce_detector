@@ -5,14 +5,20 @@
 @contact:li002252@umn.edu
 @version: 0.0.1
 @license: MIT Licence
-@file: re_cli.py.py
+@file: cli.py.py
 @time: 2020/12/28 10:21 PM
 """
 import click
 import gffutils
 
+from annotator import Annotator
+from detector import JunctionDetector
+from utils import Timer, get_logger
 
-@click.group()
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+
+
+@click.group(context_settings=CONTEXT_SETTINGS)
 def cli():
     """ program designed for detecting cryptic exons
 
@@ -29,7 +35,7 @@ def cli():
     pass
 
 
-@cli.command('build',short_help='build database for annotation file')
+@cli.command('build', short_help='build database for annotation file')
 @click.argument('gff', type=click.Path(exists=True))
 @click.option('--out-directory', '-o',
               type=click.Path(exists=True),
@@ -43,16 +49,16 @@ def build(gff, out_directory):
     this process is time-confusing so that you may need to prepare a cup of coffee!
     file of database named {prefix of annotation file}.db
 
-    \b
+    \f
     :param gff: the path of annotation file
     :type gff: str
     :param out_directory: the path of result of database
     :type out_directory: str
     :return: {out directory}/{prefix of annotation file}.db
     """
-    # _ = gffutils.create_db(gff, out_directory, merge_strategy='create_unique', keep_order=True)
-    click.echo(f'gff={gff} out_directory={out_directory}')
-    click.echo(f'Finished building database!')
+    _ = gffutils.create_db(gff, out_directory, merge_strategy='create_unique', keep_order=True)
+    # click.echo(f'gff={gff} out_directory={out_directory}')
+    # click.echo(f'Finished building database!')
 
 
 @cli.command('detect', short_help='scan cryptic exons')
@@ -86,7 +92,7 @@ def detect(bam, reference, quality, gffdb, out):
     2. annotate junction reads in terms of genome reference and annotation file
     3. scan cryptic exons according to its definition
 
-    \b
+    \f
     :param bam: bam file
     :type bam: str
     :param reference: genome reference file
@@ -98,7 +104,19 @@ def detect(bam, reference, quality, gffdb, out):
     :param out: file name of detected cryptic exons
     :type out: str
     """
-    click.echo(f'bam={bam} reference={reference} quality={quality} gffdb={gffdb} out={out}')
+    # click.echo(f'bam={bam} reference={reference} quality={quality} gffdb={gffdb} out={out}')
+    log1 = get_logger('junction_detector', create_file=False)
+    log2 = get_logger('annotate_junctions', create_file=False)
+
+    detector = JunctionDetector(bam, reference, quality)
+    with Timer() as t:
+        junctionmap = detector.run(log1)
+    log1.info(f'FINISHED FIND JUNCTION CONSUMING {t.elapsed:.2f}s')
+
+    annotator = Annotator(junctionmap, gffdb, out)
+    with Timer() as t:
+        annotator.run(log2)
+    log2.info(f'FINISHED ANNOTATE JUNCTION CONSUMING {t.elapsed:.2f}s')
 
 
 if __name__ == '__main__':

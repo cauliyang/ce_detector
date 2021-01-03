@@ -9,7 +9,7 @@
 @time: 2020/12/21 5:02 PM
 """
 
-from old_cli import main
+from cli import cli
 
 if __name__ == '__main__':
-    main()
+    cli()

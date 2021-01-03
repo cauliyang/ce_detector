@@ -18,15 +18,18 @@ CHROMS = get_yaml()['chr2hg38']
 class Annotator:
     """annotate junction reads"""
 
-    def __init__(self, junctionmap, database):
+    def __init__(self, junctionmap, database, output=None):
         """
         :param junctionmap:  instance from JunctionMap
         :type junctionmap: instance
         :param database: filename of database of annotation files
         :type database: str
+        :param output: filename of annotated junction reads. Defaults to None
+        :type output: TestIo
         """
         self.junctionMap = junctionmap
         self.database = gffutils.FeatureDB(database)
+        self.output = output
 
     @staticmethod
     def detect_property(start, end, junction_list):
@@ -71,7 +74,7 @@ class Annotator:
 
         return reads_type, donors_skipped, acceptors_skipped
 
-    def annotate_junction(self, read, result, db, output=None):
+    def annotate_junction(self, read, result, db):
         """annotate junction reads and write results to file
 
         :param read: junction read
@@ -80,8 +83,6 @@ class Annotator:
         :type result: defaultdict[Any, list]
         :param db: database of annotation file
         :type db: instance of file
-        :param output:  file handler of output. Defaults to None
-        :type output: TestIo
         """
         chrom = read.chrom
         start, end = read.start, read.end
@@ -107,7 +108,7 @@ class Annotator:
                                                      new_featuretype='intron'):
                         result[gene.id].append([junction.start, junction.end])
 
-                if len(result[gene.id]) >= 1:  # drop gene with only one exon
+                if len(result[gene.id]) >= 1:  # drop gene with only one exon in terms of number of intron
 
                     result[gene.id] = np.unique(result[gene.id], axis=0)
 
@@ -118,16 +119,17 @@ class Annotator:
         # annotate junctions reads
 
         for gene in gene_list:
-
             junction_list = result[gene]
 
             reads_type, donors_skipped, acceptors_skipped = self.detect_property(start, end, junction_list)
             #         read.type = reads_type
             #     output.write(f'{reads_information}\t{reads_type}\t{gene}\n')
-            if output:
-                output.write(f'{read}\t{reads_type}\t{donors_skipped}\t{acceptors_skipped}\t{gene}\n')
 
-    def run(self, logger, output):
+            read.information.append([reads_type, donors_skipped, acceptors_skipped, gene])
+            if self.output:
+                self.output.write(f'{read}\t{reads_type}\t{donors_skipped}\t{acceptors_skipped}\t{gene}\n')
+
+    def run(self, logger):
         """ main function used to annotate junction reads
 
         pick all genes covered by one junction read and annotate all of them:
@@ -135,15 +137,13 @@ class Annotator:
 
         :param logger: logging handler
         :type logger: instance
-        :param output: filename of outpput. Defaults to None
-        :type output: str
+
         """
 
         result = defaultdict(list)
 
-        logger.info(f'Begin to annotate junctions!')
+        # logger.info(f'Begin to annotate junctions!')
 
-        with open(output, 'w') as f:
-            for index, read in enumerate(self.junctionMap):
-                #         if index < 10:
-                self.annotate_junction(read, result, self.database, f)
+        for index, read in enumerate(self.junctionMap):
+            #         if index < 10:
+            self.annotate_junction(read, result, self.database)

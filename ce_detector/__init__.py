@@ -8,4 +8,4 @@ __version__ = '0.1.0'
 # from .annotator import Annotator
 # from .ce_scanner import Scanner
 # from .detector import Read, JunctionMap, JunctionDetector
-from .re_cli import cli
+from .cli import cli

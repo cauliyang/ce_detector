@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
 """class for detecting junction reads
 @author: YangyangLi
 @contact:li002252@umn.edu
@@ -10,7 +9,8 @@
 """
 
 import pysam as ps
-from .utils import get_yaml
+
+from utils import get_yaml
 
 # change keys to be consist with chromosome's values
 CHROMS = get_yaml()['chr2hg38']
@@ -22,13 +22,9 @@ POSITIVE_SITE, NIGATIVE_SITE = [('GT', 'AG'), ('AT', 'AC'), ('GC', 'AG')], \
 class Read:
     """ build a read class for storing information of every junction read
     """
-    __slots__ = [
-        'chrom', 'start', 'end', 'idn', 'score', 'strand', 'anchor',
-        'acceptor', 'identifiers'
-    ]
+    __slots__ = ['chrom', 'start', 'end', 'idn', 'score', 'strand', 'anchor', 'acceptor', 'information']
 
-    def __init__(self, chrom, start, end, idn, score, strand, anchor,
-                 acceptor):
+    def __init__(self, chrom, start, end, idn, score, strand, anchor, acceptor):
         """
         :param chrom: chromosome of genome
         :type chrom: str
@@ -50,16 +46,20 @@ class Read:
         self.chrom, self.start, self.end = chrom, start, end
         self.idn, self.score, self.strand = idn, score, strand
         self.anchor, self.acceptor = anchor, acceptor
-        self.identifiers = f'{self.chrom}_{self.start}_{self.end}'
+        self.information = []
 
-        # self.gene, self.type, self.donorSkipped, self.acceptorSkipped = [None
-        #                                                                  ] * 4
+    @property
+    def identifiers(self):
+        return f'{self.chrom}_{self.start}_{self.end}'
 
     def __repr__(self):
+        return f"Read({self.chrom!r}, {self.start!r}, {self.end!r}, {self.idn!r}, " \
+               f"{self.score!r}, {self.strand!r}, {self.anchor!r}, {self.acceptor!r})"
+
+    def __str__(self):
         return '\t'.join(
             map(str, [
-                self.chrom, self.start, self.end, self.idn, self.score,
-                self.strand, f'{self.acceptor}-{self.acceptor}'
+                self.chrom, self.start, self.end, self.idn, self.score, self.strand, f'{self.acceptor}-{self.acceptor}'
             ]))
 
 
@@ -121,11 +121,7 @@ class JunctionDetector:
     """class for detecting junction reads and record position
     """
 
-    def __init__(self,
-                 bam_file,
-                 reference,
-                 quality=0,
-                 output=None):
+    def __init__(self, bam_file, reference, quality=0, output=None):
         """
         :param bam_file: bam file
         :type bam_file: str
@@ -185,20 +181,20 @@ class JunctionDetector:
         """
         # detect junction reads
         junction_regions = bam_file.find_introns([
-            r for r in bam_file.fetch(contig=chrom)  ### chrom
+            r for r in bam_file.fetch(contig=chrom)  # chrom
             if r.mapping_quality > quality
         ])
 
         # annotate slice sites
         for ((start, end), score) in junction_regions.items():
-            junction_bases = reference.fetch(reference=CHROMS[chrom],  # change chrom
-                                             start=start,
-                                             end=end)
+            junction_bases = reference.fetch(
+                reference=CHROMS[chrom],  # change chrom
+                start=start,
+                end=end)
             anchor, acceptor = junction_bases[:2].upper(), junction_bases[-2:].upper()
 
             strand = self.check_strand(anchor, acceptor)
-            read = Read(chrom, start, end, idn + 1, score, strand, anchor,
-                        acceptor)
+            read = Read(chrom, start, end, idn + 1, score, strand, anchor, acceptor)
             junctionmap.add_read(read)
             #             line = f'{chrom}\t{start}\t{end}\t{idn+1}\t{score}\t{strand}\t{anchor}-{acceptor}'
 
@@ -223,16 +219,14 @@ class JunctionDetector:
         junctionmap = JunctionMap()
 
         # write junction reads information
-        log.info(
-            f'Junction Detector Start.\nParameters:\nReference: {self.reference}\nQuality Threshold: {self.quality}\nOutput: {self.output}\n '
-        )
+        log.info(f'Junction Detector Start.\nParameters:\nReference: {self.reference}\
+            \nQuality Threshold: {self.quality}\nOutput: {self.output}\n ')
         for chrom in CHROMS.keys():  # change CHROMS
             self.worker(bam, reference, chrom, self.quality, idn, junctionmap)
 
             # log.info(f'{chrom} FINSHED. NO PROBLEM FOUND')
 
         if self.output:
-            header = f'chrom\tstart\tend\tidn\tscore\tstrand\tsplice_site'
-            junctionmap.write2file(self.output, header)  # write to file
+            junctionmap.write2file(self.output)  # write to file
 
         return junctionmap

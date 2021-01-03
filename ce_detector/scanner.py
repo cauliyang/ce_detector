@@ -7,7 +7,7 @@
 @contact:li002252@umn.edu
 @version: 0.0.1
 @license: MIT Licence
-@file: ce_scanner.py
+@file: scanner.py
 @time: 2020/12/26 8:19 PM
 """
 

@@ -124,11 +124,11 @@ setup(
     # If your package is a single module, use this instead of 'packages':
     # py_modules=['mypackage'],
     entry_points={
-        'console_scripts': ['ce_detector=ce_detector.re_cli.py:main'],
+        'console_scripts': ['ce_detector=ce_detector.cli:cli'],
     },
     install_requires=REQUIRED,
     extras_require=EXTRAS,
-    setup_requires=[],
+    setup_requires=setup_requirements,  # add pytest
     test_suite='tests',
     tests_require=test_requirements,
     include_package_data=True,
