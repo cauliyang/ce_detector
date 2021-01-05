@@ -8,3 +8,4 @@ __version__ = '0.1.0'
 # from .ce_scanner import Scanner
 # from .detector import JunctionDetector
 # from .cli import cli
+# from . import utils

@@ -15,12 +15,12 @@ sys.path.append('..')
 #             with open('test_annotation.gff', 'w') as f:
 #                 f.write('This is annotation file')
 #
-#             result = runner.invoke(cli, [
+#             _result = runner.invoke(cli, [
 #                 'build',
 #                 'test_annotation.gff',
 #             ])
-#             assert result.exit_code == 0
-#             assert 'database' in result.output
+#             assert _result.exit_code == 0
+#             assert 'database' in _result.output
 #
 #     def test_detect(self):
 #         runner = CliRunner()
@@ -33,7 +33,7 @@ sys.path.append('..')
 #             with open('test_gffdb.db', 'w') as f:
 #                 f.write('This is gffdb file')
 #
-#             result = runner.invoke(cli, [
+#             _result = runner.invoke(cli, [
 #                 'detect',
 #                 '--bam', 'test_bam.bam',
 #                 '--reference', 'test_reference.fa',
@@ -42,9 +42,9 @@ sys.path.append('..')
 #                 '--out', 'test_out.bed'
 #             ])
 #
-#             assert result.exit_code == 0
-#             assert 'test_bam.bam' in result.output
-#             assert 'test_reference.fa' in result.output
-#             assert 'test_gffdb.db' in result.output
-#             assert 'quality=30' in result.output
-#             assert 'test_out.bed' in result.output
+#             assert _result.exit_code == 0
+#             assert 'test_bam.bam' in _result.output
+#             assert 'test_reference.fa' in _result.output
+#             assert 'test_gffdb.db' in _result.output
+#             assert 'quality=30' in _result.output
+#             assert 'test_out.bed' in _result.output

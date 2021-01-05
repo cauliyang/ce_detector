@@ -5,27 +5,30 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from typing import Any
 
 import gffutils
 import numpy as np
 
-from utils import get_yaml
+from .utils import get_yaml, timethis
 
 # HardCode the information of chromosome because its name of two ref are not identical
 CHROMS = get_yaml()['chr2hg38']
 
 
 class Annotator:
-    """annotate junction reads"""
+    """annotate junction reads
 
-    def __init__(self, junctionmap, database, output=None):
-        """
-        :param junctionmap:  instance from JunctionMap
-        :type junctionmap: instance
-        :param database: filename of database of annotation files
-        :type database: str
-        :param output: filename of annotated junction reads. Defaults to None
-        :type output: TestIo
+    :param junctionmap:  instance return :class:`ce_detector.detector.JunctionMap`
+    :type junctionmap: instance
+    :param database: database of annotation files
+    :type database: Any
+    :param output: filename of annotated junction reads. Defaults to None
+    :type output: TestIo
+    """
+
+    def __init__(self, junctionmap, database: Any, output=None):
+        """Constructor of Annotator
         """
         self.junctionMap = junctionmap
         self.database = gffutils.FeatureDB(database)
@@ -77,10 +80,10 @@ class Annotator:
     def annotate_junction(self, read, result, db):
         """annotate junction reads and write results to file
 
-        :param read: junction read
+        :param read: junction read return :class:`ce_detector.detector.Read`
         :type read: instance
         :param result: gene list used for annotation
-        :type result: defaultdict[Any, list]
+        :type result: defaultdict[Any, Any]
         :param db: database of annotation file
         :type db: instance of file
         """
@@ -129,14 +132,12 @@ class Annotator:
             if self.output:
                 self.output.write(f'{read}\t{reads_type}\t{donors_skipped}\t{acceptors_skipped}\t{gene}\n')
 
-    def run(self, logger):
+    @timethis(name='Junction Annotator', message='FINISHED')
+    def run(self):
         """ main function used to annotate junction reads
 
         pick all genes covered by one junction read and annotate all of them:
         type of slice, number of skipped donors and number of skipped acceptors
-
-        :param logger: logging handler
-        :type logger: instance
 
         """
 

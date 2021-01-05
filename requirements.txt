@@ -4,3 +4,6 @@ gffutils~=0.10.1
 numpy~=1.19.4
 importlib_resources~=4.1.0
 click~=7.1.2
+
+pytest~=6.2.1
+pandas~=1.2.0

@@ -3,6 +3,7 @@ include CONTRIBUTING.rst
 include HISTORY.rst
 include LICENSE
 include README.rst
+include ce_detector/chromosome.yml
 
 recursive-include tests *
 recursive-exclude * __pycache__

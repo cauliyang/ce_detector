@@ -2,6 +2,7 @@ import argparse
 import yaml
 import logging
 import time
+from functools import wraps, partial
 from os.path import join, dirname
 
 import importlib_resources
@@ -79,9 +80,10 @@ class Timer:
         self.stop()
 
 
-def get_logger(logger_name, create_file=False):
+def get_logger(logger_name, create_file=False, level=logging.INFO):
     """ set logger and output console
 
+    :param level: level for logging
     :param logger_name: logger name
     :type logger_name: str
     :param create_file: whether creat file to store log
@@ -92,7 +94,7 @@ def get_logger(logger_name, create_file=False):
     # create logger for prd_ci
     log = logging.getLogger(logger_name)
 
-    log.setLevel(level=logging.INFO)
+    log.setLevel(level=level)
 
     # create formatter and add it to the handlers
     formatter = logging.Formatter(
@@ -120,7 +122,6 @@ def get_logger(logger_name, create_file=False):
     return log
 
 
-# TODO: add subcommand to create database for gtf file
 def get_parser():
     """ get parameter from terminal
     """
@@ -175,3 +176,21 @@ def get_yaml():
     else:
         path = join(dirname(__file__), 'chromosome.yml')
     return yaml.load(open(path), Loader=yaml.BaseLoader)
+
+
+def timethis(func=None, level=logging.INFO, name=None, message=None, creat_file=False):
+    if func is None:
+        return partial(timethis, level=level, name=name, message=message, creat_file=creat_file)
+
+    logname = name if name else func.__module__
+    log = get_logger(logname, create_file=creat_file)
+    logmsg = message if message else func.__name__
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        with Timer() as t:
+            temp = func(*args, **kwargs)
+
+        log.info(f'{logmsg} CONSUMING {t.elapsed:.2f}s')
+        return temp
+    return wrapper

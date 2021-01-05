@@ -11,16 +11,18 @@
 import click
 import gffutils
 
-from annotator import Annotator
-from detector import JunctionDetector
-from utils import Timer, get_logger
+from .annotator import Annotator
+from .detector import JunctionDetector
+from .scanner import Scanner
+from . import __version__
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
 @click.group(context_settings=CONTEXT_SETTINGS)
+@click.version_option(__version__)
 def cli():
-    """ program designed for detecting cryptic exons
+    """ pr ogram designed for detecting cryptic exons
 
     Needed file types:
 
@@ -29,7 +31,7 @@ def cli():
     2. genome reference
     3. annotation file
 
-    return: result of cryptic exons (BED)
+    return: _result of cryptic exons (BED)
     """
     # click.echo(f'This is ce detector')
     pass
@@ -52,7 +54,7 @@ def build(gff, out_directory):
     \f
     :param gff: the path of annotation file
     :type gff: str
-    :param out_directory: the path of result of database
+    :param out_directory: the path of _result of database
     :type out_directory: str
     :return: {out directory}/{prefix of annotation file}.db
     """
@@ -76,14 +78,24 @@ def build(gff, out_directory):
 @click.option('--out', '-o',
               help='The output file of detected cryptic exons',
               default='cryptic_exons.bed',
-              type=click.File('w', encoding='utf-8'),
+              type=str,
               show_default=True)
 @click.option('--gffdb', '-db',
               help='The database of annotation file',
               type=click.Path(exists=True),
               required=True
               )
-def detect(bam, reference, quality, gffdb, out):
+@click.option('--cutoff', '-c',
+              help='cutoff for filtering junction reads wth low depth during scanning cryptic exons',
+              type=click.INT,
+              default=1,
+              show_default=True)
+@click.option('--out-ann', '-oa',
+              help='The output file of annotated junction reads',
+              default='annotated_junctions.bed',
+              type=click.File(mode='w', encoding='utf-8'),
+              show_default=True)
+def detect(bam, reference, quality, gffdb, cutoff, out, out_ann):
     """detect junction reads and scan cryptic exons
 
     \b
@@ -93,6 +105,10 @@ def detect(bam, reference, quality, gffdb, out):
     3. scan cryptic exons according to its definition
 
     \f
+    :param out_ann:
+    :type out_ann:
+    :param cutoff:
+    :type cutoff:
     :param bam: bam file
     :type bam: str
     :param reference: genome reference file
@@ -105,18 +121,19 @@ def detect(bam, reference, quality, gffdb, out):
     :type out: str
     """
     # click.echo(f'bam={bam} reference={reference} quality={quality} gffdb={gffdb} out={out}')
-    log1 = get_logger('junction_detector', create_file=False)
-    log2 = get_logger('annotate_junctions', create_file=False)
+    click.secho((f'\nProgram Start.\nParameters:\nReference: {reference}'
+                 f'\nQuality Threshold: {quality}\nOutput: {out}\n '), fg='red', bold=True)
 
     detector = JunctionDetector(bam, reference, quality)
-    with Timer() as t:
-        junctionmap = detector.run(log1)
-    log1.info(f'FINISHED FIND JUNCTION CONSUMING {t.elapsed:.2f}s')
+    junctionmap = detector.run()
 
-    annotator = Annotator(junctionmap, gffdb, out)
-    with Timer() as t:
-        annotator.run(log2)
-    log2.info(f'FINISHED ANNOTATE JUNCTION CONSUMING {t.elapsed:.2f}s')
+    annotator = Annotator(junctionmap, gffdb, out_ann)
+    annotator.run()
+
+    scanner = Scanner(cutoff=cutoff, output=out)
+    scanner.run(annotator.junctionMap)
+    scanner.write2file()
+    click.secho(f'Finished task, Program exist!', fg='green')
 
 
 if __name__ == '__main__':

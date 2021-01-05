@@ -10,7 +10,7 @@
 
 import pysam as ps
 
-from utils import get_yaml
+from .utils import get_yaml, timethis
 
 # change keys to be consist with chromosome's values
 CHROMS = get_yaml()['chr2hg38']
@@ -21,28 +21,29 @@ POSITIVE_SITE, NIGATIVE_SITE = [('GT', 'AG'), ('AT', 'AC'), ('GC', 'AG')], \
 
 class Read:
     """ build a read class for storing information of every junction read
+
+    :param chrom: chromosome of genome
+    :type chrom: str
+    :param start: start position of junction read
+    :type start: int
+    :param end: end position of junction read
+    :type end: int
+    :param idn: index of junction read
+    :type idn: int
+    :param score: support of junction read
+    :type score: int
+    :param strand: direction of junction read (-|+)
+    :type strand: str
+    :param anchor: anchor of junction read
+    :type anchor: str
+    :param acceptor: acceptor of junction read
+    :type acceptor: str
+
     """
     __slots__ = ['chrom', 'start', 'end', 'idn', 'score', 'strand', 'anchor', 'acceptor', 'information']
 
     def __init__(self, chrom, start, end, idn, score, strand, anchor, acceptor):
-        """
-        :param chrom: chromosome of genome
-        :type chrom: str
-        :param start: start position of junction read
-        :type start: int
-        :param end: end position of junction read
-        :type end: int
-        :param idn: index of junction read
-        :type idn: int
-        :param score: support of junction read
-        :type score: int
-        :param strand: direction of junction read (-|+)
-        :type strand: str
-        :param anchor: anchor of junction read
-        :type anchor: str
-        :param acceptor: acceptor of junction read
-        :type acceptor: str
-        """
+
         self.chrom, self.start, self.end = chrom, start, end
         self.idn, self.score, self.strand = idn, score, strand
         self.anchor, self.acceptor = anchor, acceptor
@@ -119,19 +120,19 @@ class JunctionMap:
 
 class JunctionDetector:
     """class for detecting junction reads and record position
+
+    :param bam_file: bam file
+    :type bam_file: str
+    :param output: filename of output
+    :type output: str
+    :param reference: filename of genome reference
+    :type reference: str
+    :param quality: quality for filtering junction reads
+    :type quality: int
     """
 
     def __init__(self, bam_file, reference, quality=0, output=None):
-        """
-        :param bam_file: bam file
-        :type bam_file: str
-        :param output: filename of output
-        :type output: str
-        :param reference: filename of genome reference
-        :type reference: str
-        :param quality: quality for filtering junction reads
-        :type quality: int
-        """
+
         self.bam_file, self.output = bam_file, output
 
         self.reference = reference
@@ -139,7 +140,7 @@ class JunctionDetector:
         self.quality = quality
 
     @staticmethod
-    def check_strand(anchor: str, acceptor: str) -> str:
+    def check_strand(anchor, acceptor):
         """ check type of strand
 
         :param anchor: anchor of read
@@ -199,13 +200,11 @@ class JunctionDetector:
             #             line = f'{chrom}\t{start}\t{end}\t{idn+1}\t{score}\t{strand}\t{anchor}-{acceptor}'
 
             idn += 1
-        return junctionmap
 
-    def run(self, log):
+    @timethis(name='Junction detector', message='FINISHED')
+    def run(self):
         """ detect junction reads and annotate slice site, write results to file
 
-        :param log: handler of logger
-        :type log: instance
         :return: instance from junctionmap
         :rtype: instance
         """
@@ -219,8 +218,6 @@ class JunctionDetector:
         junctionmap = JunctionMap()
 
         # write junction reads information
-        log.info(f'Junction Detector Start.\nParameters:\nReference: {self.reference}\
-            \nQuality Threshold: {self.quality}\nOutput: {self.output}\n ')
         for chrom in CHROMS.keys():  # change CHROMS
             self.worker(bam, reference, chrom, self.quality, idn, junctionmap)
 

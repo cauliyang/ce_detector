@@ -8,6 +8,7 @@ Welcome to ce_detector's documentation!
    readme
    installation
    usage
+   reference
    contributing
    authors
    history
