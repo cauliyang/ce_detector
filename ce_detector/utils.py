@@ -1,11 +1,11 @@
-import argparse
 import yaml
 import logging
 import time
+import importlib_resources
 from functools import wraps, partial
 from os.path import join, dirname
 
-import importlib_resources
+from rich.logging import RichHandler
 
 
 class Timer:
@@ -80,6 +80,44 @@ class Timer:
         self.stop()
 
 
+def rich_logger(logger_name, create_file=False, level=logging.INFO):
+    """ set logger and output console
+
+    :param level: level for logging
+    :param logger_name: logger name
+    :type logger_name: str
+    :param create_file: whether creat file to store log
+    :type create_file: bool
+    :return: logger
+    :rtype: instance
+    """
+    # create logger for prd_ci
+    log = logging.getLogger(logger_name)
+
+    # create formatter and add it to the handlers
+    template = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    formatter = logging.Formatter(template)
+
+    logging.basicConfig(level=level, format=template,handlers=[RichHandler(markup=True,
+                                                                           show_path=True,
+                                                                           show_level=False,
+                                                                           show_time=False)])
+
+    if create_file:
+        # create file handler for logger.
+        fh = logging.FileHandler(f'{logger_name}_log.txt')
+
+        fh.setLevel(level=logging.DEBUG)
+
+        fh.setFormatter(formatter)
+
+    # add handlers to logger.
+    if create_file:
+        log.addHandler(fh)
+
+    return log
+
+
 def get_logger(logger_name, create_file=False, level=logging.INFO):
     """ set logger and output console
 
@@ -122,50 +160,6 @@ def get_logger(logger_name, create_file=False, level=logging.INFO):
     return log
 
 
-def get_parser():
-    """ get parameter from terminal
-    """
-
-    parser = argparse.ArgumentParser(prog='PROG', description='Program designed to find CE',
-                                     formatter_class=argparse.MetavarTypeHelpFormatter)
-    # get bam file
-    parser.add_argument('-i',
-                        '--input',
-                        help='The input file (Bam or Sam format)',
-                        required=True,
-                        type=str)
-    # get genome reference
-    parser.add_argument(
-        '-r',
-        '--reference',
-        help='The reference fasta (.fna) file, which contains index file(*.fai).',
-        required=True,
-        type=str)
-    # get filename of junction reads
-    parser.add_argument('-o',
-                        '--out',
-                        help='The output file of annotated junction reads.',
-                        default='annotated_junction_reads.bed',
-                        type=str)
-    # get quality for filtering junction reads
-    parser.add_argument(
-        '-q',
-        '--quality',
-        help='The threshold to filter low quality reads;Default:0',
-        default=0,
-        type=int)
-    # get filename of database of gtf file
-    parser.add_argument('-d',
-                        '--gffdb',
-                        help='The annotated file',
-                        required=True,
-                        type=str)
-
-    args = parser.parse_args()
-
-    return args
-
-
 def get_yaml():
     """ get information of chromosome stored in yaml file
     :return: chromosome values
@@ -178,12 +172,12 @@ def get_yaml():
     return yaml.load(open(path), Loader=yaml.BaseLoader)
 
 
-def timethis(func=None, level=logging.INFO, name=None, message=None, creat_file=False):
+def timethis(func=None, level=logging.INFO, name=None, message=None, creat_file=False, rich=True):
     if func is None:
         return partial(timethis, level=level, name=name, message=message, creat_file=creat_file)
 
     logname = name if name else func.__module__
-    log = get_logger(logname, create_file=creat_file)
+    log = rich_logger(logname, create_file=creat_file) if rich else get_logger(logname, create_file=creat_file)
     logmsg = message if message else func.__name__
 
     @wraps(func)
@@ -191,6 +185,7 @@ def timethis(func=None, level=logging.INFO, name=None, message=None, creat_file=
         with Timer() as t:
             temp = func(*args, **kwargs)
 
-        log.info(f'{logmsg} CONSUMING {t.elapsed:.2f}s')
+        log.info(f'[bold green]{logmsg} CONSUMING {t.elapsed:.2f}s')
         return temp
+
     return wrapper

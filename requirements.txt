@@ -5,5 +5,7 @@ numpy~=1.19.4
 importlib_resources~=4.1.0
 click~=7.1.2
 
-pytest~=6.2.1
+pytest~=5.4.3
 pandas~=1.2.0
+
+rich~=9.6.1
