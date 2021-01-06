@@ -23,7 +23,6 @@ script:
 # following command to finish PyPI deployment setup:
 # $ travis encrypt --add deploy.password
 
-
 deploy:
     provider: pypi
     distributions: sdist bdist_wheel
@@ -37,5 +36,3 @@ deploy:
         tags: true
         repo: cauliyang/ce_detector
         python: 3.8
-
-

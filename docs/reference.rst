@@ -22,5 +22,3 @@ ce_detector.scanner
 
 .. automodule:: ce_detector.scanner
    :members:
-
-

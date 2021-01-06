@@ -1,6 +1,6 @@
-# mac system file 
+# mac system file
 data*
-.vscode* 
+.vscode*
 .DS*
 .idea/*
 # Byte-compiled / optimized / DLL files

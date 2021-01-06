@@ -7,7 +7,7 @@ version: 2
 
 # build documentation in the docs/ directory with sphinx
 sphinx:
-  configuration: docs/conf.py
+    configuration: docs/conf.py
 
 # build documentation with mkdocs
 #mkdocs:
@@ -15,10 +15,10 @@ sphinx:
 
 # optionally build your docs in additional formats such as pdf
 formats:
-  - pdf
+    - pdf
 
 # optionally set the version of python and requirements required to build your docs
 python:
-  version: 3.8
-  install:
-    - requirements: docs/requirements.txt
+    version: 3.8
+    install:
+        - requirements: docs/requirements.txt

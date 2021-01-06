@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-from click.testing import CliRunner
+# from click.testing import CliRunner
 import sys
 
-sys.path.append('..')
+sys.path.append("..")
 # from ce_detector import cli
 
 #

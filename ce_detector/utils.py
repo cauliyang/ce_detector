@@ -1,16 +1,17 @@
-import yaml
 import logging
 import time
-import importlib_resources
-from functools import wraps, partial
-from os.path import join, dirname
+from functools import partial
+from functools import wraps
+from os.path import dirname
+from os.path import join
 
+import importlib_resources
+import yaml
 from rich.logging import RichHandler
 
 
 class Timer:
-    """construct  Timer to show working time of tasks
-    """
+    """construct  Timer to show working time of tasks"""
 
     def __init__(self, func=time.perf_counter):
         """init values
@@ -32,7 +33,7 @@ class Timer:
         """
 
         if self._start is not None:
-            raise RuntimeError('Already started')
+            raise RuntimeError("Already started")
 
         self._start = self._func()
 
@@ -43,7 +44,7 @@ class Timer:
             RuntimeError[if task has not started then raise error]
         """
         if self._start is None:
-            raise RuntimeError('Not started')
+            raise RuntimeError("Not started")
 
         end = self._func()
 
@@ -52,8 +53,7 @@ class Timer:
         self._start = None
 
     def reset(self):
-        """reset the working time
-        """
+        """reset the working time"""
         self.elapsed = 0
 
     def running(self):
@@ -66,22 +66,20 @@ class Timer:
         return self._start is not None
 
     def __enter__(self):
-        """function used to address 'with text'
-        """
+        """function used to address 'with text'"""
 
         self.start()
 
         return self
 
     def __exit__(self, *args):
-        """function used to address 'with text'
-        """
+        """function used to address 'with text'"""
 
         self.stop()
 
 
 def rich_logger(logger_name, create_file=False, level=logging.INFO):
-    """ set logger and output console
+    """set logger and output console
 
     :param level: level for logging
     :param logger_name: logger name
@@ -95,17 +93,20 @@ def rich_logger(logger_name, create_file=False, level=logging.INFO):
     log = logging.getLogger(logger_name)
 
     # create formatter and add it to the handlers
-    template = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    template = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     formatter = logging.Formatter(template)
 
-    logging.basicConfig(level=level, format=template,handlers=[RichHandler(markup=True,
-                                                                           show_path=True,
-                                                                           show_level=False,
-                                                                           show_time=False)])
+    logging.basicConfig(
+        level=level,
+        format=template,
+        handlers=[
+            RichHandler(markup=True, show_path=True, show_level=False, show_time=False)
+        ],
+    )
 
     if create_file:
         # create file handler for logger.
-        fh = logging.FileHandler(f'{logger_name}_log.txt')
+        fh = logging.FileHandler(f"{logger_name}_log.txt")
 
         fh.setLevel(level=logging.DEBUG)
 
@@ -119,7 +120,7 @@ def rich_logger(logger_name, create_file=False, level=logging.INFO):
 
 
 def get_logger(logger_name, create_file=False, level=logging.INFO):
-    """ set logger and output console
+    """set logger and output console
 
     :param level: level for logging
     :param logger_name: logger name
@@ -136,11 +137,12 @@ def get_logger(logger_name, create_file=False, level=logging.INFO):
 
     # create formatter and add it to the handlers
     formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    )
 
     if create_file:
         # create file handler for logger.
-        fh = logging.FileHandler(f'{logger_name}_log.txt')
+        fh = logging.FileHandler(f"{logger_name}_log.txt")
 
         fh.setLevel(level=logging.DEBUG)
 
@@ -161,23 +163,31 @@ def get_logger(logger_name, create_file=False, level=logging.INFO):
 
 
 def get_yaml():
-    """ get information of chromosome stored in yaml file
+    """get information of chromosome stored in yaml file
     :return: chromosome values
     :rtype: dict
     """
     if __package__:
-        path = join(importlib_resources.files(__package__).as_posix(), 'chromosome.yml')
+        path = join(importlib_resources.files(__package__).as_posix(), "chromosome.yml")
     else:
-        path = join(dirname(__file__), 'chromosome.yml')
-    return yaml.load(open(path), Loader=yaml.BaseLoader)
+        path = join(dirname(__file__), "chromosome.yml")
+    return yaml.safe_load(open(path))
 
 
-def timethis(func=None, level=logging.INFO, name=None, message=None, creat_file=False, rich=True):
+def timethis(
+    func=None, level=logging.INFO, name=None, message=None, creat_file=False, rich=True
+):
     if func is None:
-        return partial(timethis, level=level, name=name, message=message, creat_file=creat_file)
+        return partial(
+            timethis, level=level, name=name, message=message, creat_file=creat_file
+        )
 
     logname = name if name else func.__module__
-    log = rich_logger(logname, create_file=creat_file) if rich else get_logger(logname, create_file=creat_file)
+    log = (
+        rich_logger(logname, create_file=creat_file)
+        if rich
+        else get_logger(logname, create_file=creat_file)
+    )
     logmsg = message if message else func.__name__
 
     @wraps(func)
@@ -185,7 +195,7 @@ def timethis(func=None, level=logging.INFO, name=None, message=None, creat_file=
         with Timer() as t:
             temp = func(*args, **kwargs)
 
-        log.info(f'[bold green]{logmsg} CONSUMING {t.elapsed:.2f}s')
+        log.info(f"[bold green]{logmsg} CONSUMING {t.elapsed:.2f}s")
         return temp
 
     return wrapper

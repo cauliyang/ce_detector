@@ -7,20 +7,23 @@
 @file: detector.py
 @time: 2020/12/21 5:38 PM
 """
-
 import pysam as ps
 
-from .utils import get_yaml, timethis
+from .utils import get_yaml
+from .utils import timethis
 
 # change keys to be consist with chromosome's values
-CHROMS = get_yaml()['chr2hg38']
+CHROMS = get_yaml()["chr2hg38"]
 
-POSITIVE_SITE, NIGATIVE_SITE = [('GT', 'AG'), ('AT', 'AC'), ('GC', 'AG')], \
-                               [('CT', 'AC'), ('GT', 'AT'), ('CT', 'GC')]
+POSITIVE_SITE, NIGATIVE_SITE = [("GT", "AG"), ("AT", "AC"), ("GC", "AG")], [
+    ("CT", "AC"),
+    ("GT", "AT"),
+    ("CT", "GC"),
+]
 
 
 class Read:
-    """ build a read class for storing information of every junction read
+    """build a read class for storing information of every junction read
 
     :param chrom: chromosome of genome
     :type chrom: str
@@ -40,7 +43,18 @@ class Read:
     :type acceptor: str
 
     """
-    __slots__ = ['chrom', 'start', 'end', 'idn', 'score', 'strand', 'anchor', 'acceptor', 'information']
+
+    __slots__ = [
+        "chrom",
+        "start",
+        "end",
+        "idn",
+        "score",
+        "strand",
+        "anchor",
+        "acceptor",
+        "information",
+    ]
 
     def __init__(self, chrom, start, end, idn, score, strand, anchor, acceptor):
 
@@ -51,28 +65,39 @@ class Read:
 
     @property
     def identifiers(self):
-        return f'{self.chrom}_{self.start}_{self.end}'
+        return f"{self.chrom}_{self.start}_{self.end}"
 
     def __repr__(self):
-        return f"Read({self.chrom!r}, {self.start!r}, {self.end!r}, {self.idn!r}, " \
-               f"{self.score!r}, {self.strand!r}, {self.anchor!r}, {self.acceptor!r})"
+        return (
+            f"Read({self.chrom!r}, {self.start!r}, {self.end!r}, {self.idn!r}, "
+            f"{self.score!r}, {self.strand!r}, {self.anchor!r}, {self.acceptor!r})"
+        )
 
     def __str__(self):
-        return '\t'.join(
-            map(str, [
-                self.chrom, self.start, self.end, self.idn, self.score, self.strand, f'{self.acceptor}-{self.acceptor}'
-            ]))
+        return "\t".join(
+            map(
+                str,
+                [
+                    self.chrom,
+                    self.start,
+                    self.end,
+                    self.idn,
+                    self.score,
+                    self.strand,
+                    f"{self.acceptor}-{self.acceptor}",
+                ],
+            )
+        )
 
 
 class JunctionMap:
-    """ build a class to store information of all junction reads
-    """
+    """build a class to store information of all junction reads"""
 
     def __init__(self):
         self.junctionList = {}
 
     def add_read(self, read):
-        """ add read to  junctionlist
+        """add read to  junctionlist
 
         :param read: instance from Read
         :type read: instance
@@ -80,7 +105,7 @@ class JunctionMap:
         self.junctionList[read.identifiers] = read
 
     def get_read(self, identifiers):
-        """ get read from junctionlist according to identifiers
+        """get read from junctionlist according to identifiers
 
         :param identifiers: identifier for every read: chrom_start_end
         :type identifiers: int
@@ -90,7 +115,7 @@ class JunctionMap:
         return self.junctionList[identifiers]
 
     def __contains__(self, identifiers):
-        """ check if read is in junctionlist according to identifiers
+        """check if read is in junctionlist according to identifiers
 
         :param identifiers: identifier for every read: chrom_start_end
         :type identifiers: str
@@ -100,22 +125,21 @@ class JunctionMap:
         return identifiers in self.junctionList
 
     def __iter__(self):
-        """ iterate every read in junctionlist
-        """
+        """iterate every read in junctionlist"""
         return iter(self.junctionList.values())
 
     def write2file(self, output, header=None):
-        """ write all reads in junctionlist to file
+        """write all reads in junctionlist to file
 
         :param output: file name of output
         :type output: str
         :param header: header of output
         :type header: str
         """
-        with open(output, 'w') as f:
-            f.write(f'{header}\n')
+        with open(output, "w") as f:
+            f.write(f"{header}\n")
             for read in self:
-                f.write(f'{read}\n')
+                f.write(f"{read}\n")
 
 
 class JunctionDetector:
@@ -141,7 +165,7 @@ class JunctionDetector:
 
     @staticmethod
     def check_strand(anchor, acceptor):
-        """ check type of strand
+        """check type of strand
 
         :param anchor: anchor of read
         :type anchor: str
@@ -150,20 +174,20 @@ class JunctionDetector:
         :return: type of strand (-|+)
         :rtype: str
         """
-        strand = 'N'
+        strand = "N"
 
         if (anchor, acceptor) in POSITIVE_SITE:
 
-            strand = '+'
+            strand = "+"
 
         elif (anchor, acceptor) in NIGATIVE_SITE:
 
-            strand = '-'
+            strand = "-"
 
         return strand
 
     def worker(self, bam_file, reference, chrom, quality, idn, junctionmap):
-        """ find junction reads and annotate slice site
+        """find junction reads and annotate slice site
 
         :param bam_file: handle of bam_file
         :type bam_file: instance
@@ -181,17 +205,19 @@ class JunctionDetector:
         :rtype: instance
         """
         # detect junction reads
-        junction_regions = bam_file.find_introns([
-            r for r in bam_file.fetch(contig=chrom)  # chrom
-            if r.mapping_quality > quality
-        ])
+        junction_regions = bam_file.find_introns(
+            [
+                r
+                for r in bam_file.fetch(contig=chrom)  # chrom
+                if r.mapping_quality > quality
+            ]
+        )
 
         # annotate slice sites
         for ((start, end), score) in junction_regions.items():
             junction_bases = reference.fetch(
-                reference=CHROMS[chrom],  # change chrom
-                start=start,
-                end=end)
+                reference=CHROMS[chrom], start=start, end=end  # change chrom
+            )
             anchor, acceptor = junction_bases[:2].upper(), junction_bases[-2:].upper()
 
             strand = self.check_strand(anchor, acceptor)
@@ -201,9 +227,9 @@ class JunctionDetector:
 
             idn += 1
 
-    @timethis(name='Junction detector', message='FINISHED')
+    @timethis(name="Junction detector", message="FINISHED")
     def run(self):
-        """ detect junction reads and annotate slice site, write results to file
+        """detect junction reads and annotate slice site, write results to file
 
         :return: instance from junctionmap
         :rtype: instance
