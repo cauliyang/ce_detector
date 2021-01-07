@@ -9,3 +9,5 @@ pytest~=5.4.3
 
 rich~=9.6.1
 setuptools~=50.3.0
+
+pyyaml==5.3.1

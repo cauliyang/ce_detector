@@ -14,10 +14,6 @@ ce_detector
    :alt: Documentation Status
 
 
-.. image:: https://pyup.io/repos/github/li002252/ce_detector/shield.svg
-   :target: https://pyup.io/repos/github/li002252/ce_detector/
-   :alt: Updates
-
 
 A program used to detect Cryptic Exon
 
