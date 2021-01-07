@@ -2,6 +2,8 @@
 Usage
 =====
 
-To use ce_detector in a project::
 
-    import ce_detector
+
+.. click:: ce_detector.cli:cli
+   :prog: cli
+   :nested: full

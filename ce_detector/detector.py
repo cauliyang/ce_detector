@@ -1,11 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """class for detecting junction reads
-@author: YangyangLi
-@contact:li002252@umn.edu
-@license: MIT Licence
-@file: detector.py
-@time: 2020/12/21 5:38 PM
+
 """
 import pysam as ps
 

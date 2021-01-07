@@ -3,12 +3,7 @@
 """ class for scanning cryptic exons based on previous _result ::
 Junction detector and junction annotator
 
-@author: YangyangLi
-@contact:li002252@umn.edu
-@version: 0.0.1
-@license: MIT Licence
-@file: scanner.py
-@time: 2020/12/26 8:19 PM
+
 """
 from typing import Iterable
 
