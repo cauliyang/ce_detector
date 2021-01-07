@@ -167,7 +167,11 @@ def detect(bam, reference, quality, gffdb, cutoff, out, out_ann):
     # click.secho((f'\nProgram Start.\nParameters:\nReference: {reference}'
     #              f'\nQuality Threshold: {quality}\nOutput: {out}\n '), fg='red', bold=True)
 
-    detector = JunctionDetector(bam, reference, quality)
+    detector = JunctionDetector(
+        bam,
+        reference,
+        quality,
+    )
     junctionmap = detector.run()
 
     annotator = Annotator(junctionmap, gffdb, out_ann)
@@ -176,7 +180,6 @@ def detect(bam, reference, quality, gffdb, cutoff, out, out_ann):
     scanner = Scanner(cutoff=cutoff, output=out)
     scanner.run(annotator.junctionMap)
     scanner.write2file()
-    # click.secho(f'Finished task, Program exist!', fg='green')
 
 
 if __name__ == "__main__":

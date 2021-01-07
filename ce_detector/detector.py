@@ -53,7 +53,6 @@ class Read:
     ]
 
     def __init__(self, chrom, start, end, idn, score, strand, anchor, acceptor):
-
         self.chrom, self.start, self.end = chrom, start, end
         self.idn, self.score, self.strand = idn, score, strand
         self.anchor, self.acceptor = anchor, acceptor
@@ -128,14 +127,19 @@ class JunctionMap:
         """write all reads in junctionlist to file
 
         :param output: file name of output
-        :type output: str
+        :type output: str or TextIo
         :param header: header of output
         :type header: str
         """
-        with open(output, "w") as f:
-            f.write(f"{header}\n")
+        try:
+            output.write(f"{header}\n")
+        except AttributeError:
+            output = open(output, "w")
+            output.write(f"{header}\n")
+        finally:
             for read in self:
-                f.write(f"{read}\n")
+                output.write(f"{read}\n")
+            output.close()
 
 
 class JunctionDetector:

@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 """ class for scanning cryptic exons based on previous _result ::
 Junction detector and junction annotator
-
-
 """
 from typing import Iterable
 
@@ -11,9 +9,6 @@ import numpy as np
 import pandas as pd
 
 from .utils import timethis
-
-
-# TODO: 1. use rich to output log info
 
 
 def check(axis) -> np.array:
@@ -61,7 +56,7 @@ def assign_value(df_ce, ces, ns, ce_id, ns_id) -> None:
 def split_ce(df_ce, df_n) -> Iterable:
     """Iterator: check whether detected cryptic exons are split by other junction reads
 
-    :param df_ce: pandas.DataFrame of cryptic exons return from func:`find_ce`
+    :param df_ce: pandas.DataFrame of cryptic exons return from :func:`find_ce`
     :type df_ce: pandas.DataFrame
     :param df_n: pandas.DataFrame of junction reads with N type
     :type df_n: pandas.DataFrame
@@ -201,7 +196,7 @@ class Scanner:
     def run(self, junctionmap) -> Iterable:
         """run program to scan cryptic exons
 
-        :param junctionmap: instance from class:`ce_detector.detector.JunctionMap`
+        :param junctionmap: instance from :class:`ce_detector.detector.JunctionMap`
         :type junctionmap: instance
         :return: temporary result used to store cryptic exons
         :rtype: Iterable

@@ -20,8 +20,8 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath(".."))
-
+SOURCE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__name__)))
+sys.path.insert(0, SOURCE_DIR)
 import ce_detector
 
 # -- General configuration ---------------------------------------------
