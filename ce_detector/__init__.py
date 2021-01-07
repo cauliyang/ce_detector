@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Top-level package for ce-detector."""
 
 __author__ = """YangyangLi"""

@@ -86,7 +86,7 @@ class Read:
                     self.strand,
                     f"{self.acceptor}-{self.acceptor}",
                 ],
-            )
+            ),
         )
 
 
@@ -210,13 +210,15 @@ class JunctionDetector:
                 r
                 for r in bam_file.fetch(contig=chrom)  # chrom
                 if r.mapping_quality > quality
-            ]
+            ],
         )
 
         # annotate slice sites
         for ((start, end), score) in junction_regions.items():
             junction_bases = reference.fetch(
-                reference=CHROMS[chrom], start=start, end=end  # change chrom
+                reference=CHROMS[chrom],
+                start=start,
+                end=end,  # change chrom
             )
             anchor, acceptor = junction_bases[:2].upper(), junction_bases[-2:].upper()
 

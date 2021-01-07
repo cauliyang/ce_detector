@@ -111,7 +111,10 @@ class Annotator:
                     # find all position of introns for every gene known junctions
                     for junction in db.interfeatures(
                         db.children(
-                            transcript, level=1, featuretype="exon", order_by="start"
+                            transcript,
+                            level=1,
+                            featuretype="exon",
+                            order_by="start",
                         ),
                         new_featuretype="intron",
                     ):
@@ -133,17 +136,19 @@ class Annotator:
             junction_list = result[gene]
 
             reads_type, donors_skipped, acceptors_skipped = self.detect_property(
-                start, end, junction_list
+                start,
+                end,
+                junction_list,
             )
             #         read.type = reads_type
             #     output.write(f'{reads_information}\t{reads_type}\t{gene}\n')
 
             read.information.append(
-                [reads_type, donors_skipped, acceptors_skipped, gene]
+                [reads_type, donors_skipped, acceptors_skipped, gene],
             )
             if self.output:
                 self.output.write(
-                    f"{read}\t{reads_type}\t{donors_skipped}\t{acceptors_skipped}\t{gene}\n"
+                    f"{read}\t{reads_type}\t{donors_skipped}\t{acceptors_skipped}\t{gene}\n",
                 )
 
     @timethis(name="Junction Annotator", message="FINISHED")

@@ -70,7 +70,10 @@ def build(gff, out_directory):
     :return: {out directory}/{prefix of annotation file}.db
     """
     _ = gffutils.create_db(
-        gff, out_directory, merge_strategy="create_unique", keep_order=True
+        gff,
+        out_directory,
+        merge_strategy="create_unique",
+        keep_order=True,
     )
 
 

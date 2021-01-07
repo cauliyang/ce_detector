@@ -89,13 +89,15 @@ def split_ce(df_ce, df_n) -> Iterable:
     if ces_values.size > 1:
 
         x = np.apply_along_axis(
-            lambda row: row - ns_values, 1, ces_values
+            lambda row: row - ns_values,
+            1,
+            ces_values,
         )  # iter for row
 
         bool_re = np.apply_along_axis(check, 2, x)
 
         position = np.argwhere(
-            bool_re
+            bool_re,
         )  # return row id, n_df id[[ce_id,n_id],[ce_id,n_id]]
 
         if position.size >= 1:

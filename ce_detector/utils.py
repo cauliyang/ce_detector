@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import logging
 import time
 from functools import partial
@@ -100,7 +101,7 @@ def rich_logger(logger_name, create_file=False, level=logging.INFO):
         level=level,
         format=template,
         handlers=[
-            RichHandler(markup=True, show_path=True, show_level=False, show_time=False)
+            RichHandler(markup=True, show_path=True, show_level=False, show_time=False),
         ],
     )
 
@@ -137,7 +138,7 @@ def get_logger(logger_name, create_file=False, level=logging.INFO):
 
     # create formatter and add it to the handlers
     formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
     if create_file:
@@ -175,11 +176,20 @@ def get_yaml():
 
 
 def timethis(
-    func=None, level=logging.INFO, name=None, message=None, creat_file=False, rich=True
+    func=None,
+    level=logging.INFO,
+    name=None,
+    message=None,
+    creat_file=False,
+    rich=True,
 ):
     if func is None:
         return partial(
-            timethis, level=level, name=name, message=message, creat_file=creat_file
+            timethis,
+            level=level,
+            name=name,
+            message=message,
+            creat_file=creat_file,
         )
 
     logname = name if name else func.__module__

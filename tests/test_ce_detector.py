@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """Tests for `ce_detector` package."""
 import pytest
 

@@ -1,11 +1,11 @@
-setuptools~=50.3.0
-pysam~=0.16.0.1
-gffutils~=0.10.1
-numpy~=1.19.4
-importlib_resources~=4.1.0
 click~=7.1.2
+gffutils~=0.10.1
+importlib_resources~=4.1.0
+numpy~=1.19.4
+pandas~=1.2.0
+pysam~=0.16.0.1
 
 pytest~=5.4.3
-pandas~=1.2.0
 
 rich~=9.6.1
+setuptools~=50.3.0
