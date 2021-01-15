@@ -101,7 +101,7 @@ def rich_logger(logger_name, create_file=False, level=logging.INFO):
         level=level,
         format=template,
         handlers=[
-            RichHandler(markup=True, show_path=True, show_level=False, show_time=False),
+            RichHandler(markup=True, show_level=False, show_time=False),
         ],
     )
 

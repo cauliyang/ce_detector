@@ -174,7 +174,7 @@ def detect(bam, reference, quality, gffdb, cutoff, out, out_ann):
     )
     junctionmap = detector.run()
 
-    annotator = Annotator(junctionmap, gffdb, out_ann)
+    annotator = Annotator(junctionmap, gffdb)
     annotator.run()
 
     scanner = Scanner(cutoff=cutoff, output=out)
