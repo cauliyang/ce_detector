@@ -40,7 +40,7 @@ class Read:
 
     """
 
-    __slots__ = [
+    __slots__ = (
         "chrom",
         "start",
         "end",
@@ -50,7 +50,7 @@ class Read:
         "anchor",
         "acceptor",
         "information",
-    ]
+    )
 
     def __init__(self, chrom, start, end, idn, score, strand, anchor, acceptor):
         self.chrom, self.start, self.end = chrom, start, end
@@ -79,7 +79,7 @@ class Read:
                     self.idn,
                     self.score,
                     self.strand,
-                    f"{self.acceptor}-{self.acceptor}",
+                    f"{self.anchor}-{self.acceptor}",
                 ],
             ),
         )
