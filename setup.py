@@ -18,7 +18,7 @@ URL = "https://github.com/cauliyang/ce_detector/"
 EMAIL = "li002252@umn.edu"
 AUTHOR = "YangyangLi"
 REQUIRES_PYTHON = ">=3.6.0"
-VERSION = "0.1.0"
+VERSION = "version='0.1.1'"
 
 with open("HISTORY.rst") as history_file:
     history = history_file.read()
