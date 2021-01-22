@@ -188,19 +188,27 @@ class Scanner:
         return f"Scanner({self.cutoff!r})"
 
     @timethis(name="File Writer for Scanner", message="FINISHED")
-    def write2file(self):
+    def write2file(self, logger, verbose=False):
         """ start iterator and write _result to file"""
+        if verbose:
+            logger.info("Beginning Writing")
         pd.concat(self._result).to_csv(self.output, sep="\t", encoding="utf8")
 
     @timethis(name="Cryptic Exon Scanner", message="FINISHED")
-    def run(self, junctionmap) -> Iterable:
+    def run(self, junctionmap, logger, verbose=False) -> Iterable:
         """run program to scan cryptic exons
 
+        :param verbose:
+        :type verbose:
+        :param logger:
+        :type logger:
         :param junctionmap: instance from :class:`ce_detector.detector.JunctionMap`
         :type junctionmap: instance
         :return: temporary result used to store cryptic exons
         :rtype: Iterable
         """
+        if verbose:
+            logger.info("Beginning Scanner")
         self._result = (
             pd.DataFrame(
                 [

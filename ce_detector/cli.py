@@ -28,7 +28,7 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"], max_content_width=15
     subcommand_metavar="<command>",
 )
 @click.version_option(__version__)
-@click.option("--verbose/--no-verbose", default=False)
+@click.option("--verbose", is_flag=True, default=False, help="Show the verbose mode")
 @click.pass_context
 def cli(ctx, verbose):
     """program designed for detecting cryptic exons
@@ -185,11 +185,11 @@ def detect(ctx, bam, reference, quality, gffdb, cutoff, out, out_ann):
     junctionmap = detector.run(verbose=verbose)
 
     annotator = Annotator(junctionmap, gffdb)
-    annotator.run()
+    annotator.run(verbose=verbose)
 
     scanner = Scanner(cutoff=cutoff, output=out)
-    scanner.run(annotator.junctionMap)
-    scanner.write2file()
+    scanner.run(annotator.junctionMap, verbose=verbose)
+    scanner.write2file(verbose=verbose)
 
 
 if __name__ == "__main__":

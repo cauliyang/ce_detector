@@ -152,7 +152,7 @@ class Annotator:
                 )
 
     @timethis(name="Junction Annotator", message="FINISHED")
-    def run(self):
+    def run(self, logger, verbose=False):
         """main function used to annotate junction reads
 
         pick all genes covered by one junction read and annotate all of them:
@@ -166,3 +166,5 @@ class Annotator:
 
         for _index, read in enumerate(self.junctionMap):
             self.annotate_junction(read, result, self.database)
+            if verbose and _index % 1000 == 0:
+                logger.info(f"{_index} Reads Finished")

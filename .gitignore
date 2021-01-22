@@ -1,5 +1,6 @@
 # mac system file
 data*
+*.bed
 .vscode*
 .DS*
 .idea/*

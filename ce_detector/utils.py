@@ -205,7 +205,7 @@ def timethis(
     @wraps(func)
     def wrapper(*args, **kwargs):
         with Timer() as t:
-            temp = func(*args, log=log, **kwargs)
+            temp = func(*args, logger=log, **kwargs)
 
         log.info(f"[bold green]{logmsg} CONSUMING {t.elapsed:.2f}s")
         return temp
