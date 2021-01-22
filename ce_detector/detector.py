@@ -230,7 +230,7 @@ class JunctionDetector:
             idn += 1
 
     @timethis(name="Junction detector", message="FINISHED")
-    def run(self):
+    def run(self, verbose, log):
         """detect junction reads and annotate slice site, write results to file
 
         :return: instance from junctionmap
@@ -248,8 +248,8 @@ class JunctionDetector:
         # write junction reads information
         for chrom in CHROMS.keys():  # change CHROMS
             self.worker(bam, reference, chrom, self.quality, idn, junctionmap)
-
-            # log.info(f'{chrom} FINSHED. NO PROBLEM FOUND')
+            if verbose:
+                log.debug(f"[finished] Chrom {chrom}")
 
         if self.output:
             junctionmap.write2file(self.output)  # write to file

@@ -28,7 +28,9 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"], max_content_width=15
     subcommand_metavar="<command>",
 )
 @click.version_option(__version__)
-def cli():
+@click.option("--verbose/--no-verbose", default=False)
+@click.pass_context
+def cli(ctx, verbose):
     """program designed for detecting cryptic exons
 
     Needed file types:
@@ -38,7 +40,8 @@ def cli():
     2. genome reference
     3. annotation file
     """
-    pass
+    ctx.ensure_object(dict)
+    ctx.obj["verbose"] = verbose
 
 
 @cli.command(
@@ -55,7 +58,8 @@ def cli():
     show_default=True,
     metavar="<path>",
 )
-def build(gff, out_directory):
+@click.pass_context
+def build(ctx, gff, out_directory):
     """build database for annotation file
 
     build database of annotation file in order to use the database to annotate junctions reads later.
@@ -63,12 +67,17 @@ def build(gff, out_directory):
     file of database named {prefix of annotation file}.db
 
     \f
+    :param ctx: click context used to pass parameters
+    :type ctx: ``click.Context``
     :param gff: the path of annotation file
     :type gff: str
     :param out_directory: the path of _result of database
     :type out_directory: str
     :return: {out directory}/{prefix of annotation file}.db
     """
+    verbose = ctx.obj["verbose"]
+    if verbose:
+        pass
     _ = gffutils.create_db(
         gff,
         out_directory,
@@ -138,7 +147,8 @@ def build(gff, out_directory):
     show_default=True,
     metavar="<path>",
 )
-def detect(bam, reference, quality, gffdb, cutoff, out, out_ann):
+@click.pass_context
+def detect(ctx, bam, reference, quality, gffdb, cutoff, out, out_ann):
     """detect junction reads and scan cryptic exons
 
     \b
@@ -148,10 +158,12 @@ def detect(bam, reference, quality, gffdb, cutoff, out, out_ann):
     3. scan cryptic exons according to its definition
 
     \f
-    :param out_ann:
-    :type out_ann:
-    :param cutoff:
-    :type cutoff:
+    :param ctx: click context used to pass parameters
+    :type ctx: ``click.Context``
+    :param out_ann: output file used to store annotated reads
+    :type out_ann: IO
+    :param cutoff: threshold for filtering junction reads with low quality
+    :type cutoff: int
     :param bam: bam file
     :type bam: str
     :param reference: genome reference file
@@ -163,16 +175,14 @@ def detect(bam, reference, quality, gffdb, cutoff, out, out_ann):
     :param out: file name of detected cryptic exons
     :type out: str
     """
-
-    # click.secho((f'\nProgram Start.\nParameters:\nReference: {reference}'
-    #              f'\nQuality Threshold: {quality}\nOutput: {out}\n '), fg='red', bold=True)
+    verbose = ctx.obj["verbose"]
 
     detector = JunctionDetector(
         bam,
         reference,
         quality,
     )
-    junctionmap = detector.run()
+    junctionmap = detector.run(verbose=verbose)
 
     annotator = Annotator(junctionmap, gffdb)
     annotator.run()

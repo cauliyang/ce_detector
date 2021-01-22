@@ -165,5 +165,4 @@ class Annotator:
         # logger.info(f'Begin to annotate junctions!')
 
         for _index, read in enumerate(self.junctionMap):
-            #         if index < 10:
             self.annotate_junction(read, result, self.database)
