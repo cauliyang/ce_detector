@@ -107,7 +107,7 @@ def build(ctx, gff, out_directory):
     "--quality",
     "-q",
     help="The threshold to filter low quality reads",
-    default=0,
+    default=30,
     type=click.INT,
     show_default=True,
     metavar="<int>",
@@ -181,6 +181,7 @@ def detect(ctx, bam, reference, quality, gffdb, cutoff, out, out_ann):
         bam,
         reference,
         quality,
+        output="test_exon.bed",
     )
     junctionmap = detector.run(verbose=verbose)
 

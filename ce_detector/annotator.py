@@ -140,8 +140,6 @@ class Annotator:
                 end,
                 junction_list,
             )
-            #         read.type = reads_type
-            #     output.write(f'{reads_information}\t{reads_type}\t{gene}\n')
 
             read.information.append(
                 [reads_type, donors_skipped, acceptors_skipped, gene],

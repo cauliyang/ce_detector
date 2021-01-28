@@ -3,6 +3,8 @@
 """class for detecting junction reads
 
 """
+import time
+
 import pysam as ps
 
 from .utils import get_yaml
@@ -10,12 +12,6 @@ from .utils import timethis
 
 # change keys to be consist with chromosome's values
 CHROMS = get_yaml()["chr2hg38"]
-
-POSITIVE_SITE, NIGATIVE_SITE = [("GT", "AG"), ("AT", "AC"), ("GC", "AG")], [
-    ("CT", "AC"),
-    ("GT", "AT"),
-    ("CT", "GC"),
-]
 
 
 class Read:
@@ -64,8 +60,8 @@ class Read:
 
     def __repr__(self):
         return (
-            f"Read({self.chrom!r}, {self.start!r}, {self.end!r}, {self.idn!r}, "
-            f"{self.score!r}, {self.strand!r}, {self.anchor!r}, {self.acceptor!r})"
+            fr"Read({self.chrom}, {self.start}, {self.end}, {self.idn}, "
+            fr"{self.score}, {self.strand}, {self.anchor}, {self.acceptor})"
         )
 
     def __str__(self):
@@ -155,7 +151,14 @@ class JunctionDetector:
     :type quality: int
     """
 
-    def __init__(self, bam_file, reference, quality=0, output=None):
+    SPLICE_SITE = dict(
+        zip([("GT", "AG"), ("AT", "AC"), ("GC", "AG")], "+++")
+    )  # positive site
+    SPLICE_SITE.update(
+        dict(zip([("CT", "AC"), ("GT", "AT"), ("CT", "GC")], "---"))
+    )  # negative site
+
+    def __init__(self, bam_file, reference, quality, output=None):
 
         self.bam_file, self.output = bam_file, output
 
@@ -174,15 +177,8 @@ class JunctionDetector:
         :return: type of strand (-|+)
         :rtype: str
         """
-        strand = "N"
 
-        if (anchor, acceptor) in POSITIVE_SITE:
-
-            strand = "+"
-
-        elif (anchor, acceptor) in NIGATIVE_SITE:
-
-            strand = "-"
+        strand = JunctionDetector.SPLICE_SITE.get((anchor, acceptor), "N")
 
         return strand
 
@@ -225,7 +221,6 @@ class JunctionDetector:
             strand = self.check_strand(anchor, acceptor)
             read = Read(chrom, start, end, idn + 1, score, strand, anchor, acceptor)
             junctionmap.add_read(read)
-            #             line = f'{chrom}\t{start}\t{end}\t{idn+1}\t{score}\t{strand}\t{anchor}-{acceptor}'
 
             idn += 1
 
@@ -247,9 +242,13 @@ class JunctionDetector:
 
         # write junction reads information
         for chrom in CHROMS.keys():  # change CHROMS
-            self.worker(bam, reference, chrom, self.quality, idn, junctionmap)
             if verbose:
-                logger.info(f"Chrom {chrom} Finished")
+                logger.info(f"Chrom {chrom} Beginning")
+                start = time.time()
+            self.worker(bam, reference, chrom, self.quality, idn, junctionmap)
+
+            if verbose:
+                logger.info(f"Chrom {chrom} Finished {time.time() - start:.2f}s")
 
         if self.output:
             junctionmap.write2file(self.output)  # write to file
