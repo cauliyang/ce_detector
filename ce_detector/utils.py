@@ -207,7 +207,9 @@ def timethis(
         with Timer() as t:
             temp = func(*args, logger=log, **kwargs)
 
-        log.info(f"[bold green]{logmsg} CONSUMING {t.elapsed:.2f}s")
+        # log.debug(f"[bold green]{logmsg} CONSUMING {t.elapsed:.2f}s")
+        _ = f"{t} {logmsg}"
+
         return temp
 
     return wrapper

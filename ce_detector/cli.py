@@ -8,14 +8,16 @@
 @file: cli.py.py
 @time: 2020/12/28 10:21 PM
 """
+from concurrent import futures
+
 import click
 import gffutils
+import pandas as pd
 from rich.traceback import install
 
 from . import __version__
-from .annotator import Annotator
-from .detector import JunctionDetector
-from .scanner import Scanner
+from .main import main
+from .utils import get_yaml
 
 install()
 
@@ -138,17 +140,9 @@ def build(ctx, gff, out_directory):
     show_default=True,
     metavar="<int>",
 )
-@click.option(
-    "--out-ann",
-    "-oa",
-    help="The output file of annotated junction reads",
-    default="annotated_junctions.bed",
-    type=click.File(mode="w", encoding="utf-8"),
-    show_default=True,
-    metavar="<path>",
-)
+@click.option("--parallel", is_flag=True, default=False, help="using parallel mode")
 @click.pass_context
-def detect(ctx, bam, reference, quality, gffdb, cutoff, out, out_ann):
+def detect(ctx, bam, reference, quality, gffdb, cutoff, out, parallel):
     """detect junction reads and scan cryptic exons
 
     \b
@@ -158,10 +152,10 @@ def detect(ctx, bam, reference, quality, gffdb, cutoff, out, out_ann):
     3. scan cryptic exons according to its definition
 
     \f
+    :param parallel:
+    :type parallel:
     :param ctx: click context used to pass parameters
     :type ctx: ``click.Context``
-    :param out_ann: output file used to store annotated reads
-    :type out_ann: IO
     :param cutoff: threshold for filtering junction reads with low quality
     :type cutoff: int
     :param bam: bam file
@@ -175,22 +169,33 @@ def detect(ctx, bam, reference, quality, gffdb, cutoff, out, out_ann):
     :param out: file name of detected cryptic exons
     :type out: str
     """
+
     verbose = ctx.obj["verbose"]
 
-    detector = JunctionDetector(
-        bam,
-        reference,
-        quality,
-        output="test_exon.bed",
+    # change keys to be consist with chromosome's values
+    CHROMS = get_yaml()["chr2hg38"]
+
+    worker = (
+        futures.ProcessPoolExecutor()
+        if parallel
+        else futures.ThreadPoolExecutor(max_workers=24)
     )
-    junctionmap = detector.run(verbose=verbose)
 
-    annotator = Annotator(junctionmap, gffdb)
-    annotator.run(verbose=verbose)
+    tasks = []
+    junctionmaps = []
+    with worker as executor:
+        for chrom, ann_chrom in CHROMS.items():
+            future = executor.submit(
+                main, chrom, ann_chrom, bam, reference, quality, gffdb, cutoff, verbose
+            )
+            tasks.append(future)
+        for future in futures.as_completed(tasks):
+            junctionmaps.append(future.result())
 
-    scanner = Scanner(cutoff=cutoff, output=out)
-    scanner.run(annotator.junctionMap, verbose=verbose)
-    scanner.write2file(verbose=verbose)
+    final_result = [
+        jmap.result for jmap in junctionmaps if isinstance(jmap.result, pd.DataFrame)
+    ]
+    pd.concat(final_result).to_csv(out, sep="\t", encoding="utf8", index=False)
 
 
 if __name__ == "__main__":

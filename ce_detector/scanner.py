@@ -63,6 +63,7 @@ def split_ce(df_ce, df_n) -> Iterable:
     :return: param:`df_ce` with new column `children`
     :rtype: iterator
     """
+
     # set gene as index
     df_ce.set_index("gene", inplace=True)
     df_n.set_index("gene", inplace=True)
@@ -105,7 +106,7 @@ def split_ce(df_ce, df_n) -> Iterable:
             for ns_id in position.flatten():
                 assign_value(df_ce, ces, ns, ce_id=0, ns_id=ns_id)
 
-    yield df_ce
+    return df_ce
 
 
 def find_ce(groups) -> Iterable:
@@ -142,13 +143,15 @@ def find_ce(groups) -> Iterable:
         "gene",
     )
 
+    result = []
+
     for strand in ("+", "-"):
         da = groups.get_group((strand, "DA"))
         d = groups.get_group((strand, "D"))
         a = groups.get_group((strand, "A"))
         n = groups.get_group((strand, "N"))
 
-        yield from (
+        temp = (
             da.merge(
                 d,
                 left_on=["chrom", "start", "gene"],
@@ -165,8 +168,10 @@ def find_ce(groups) -> Iterable:
             .rename(columns=dict(zip(pick_col, rename_col)))
             .assign(length=lambda df: df.end - df.start)
             .assign(children="")
-            .pipe(split_ce, n)
         )
+
+        result.append(split_ce(temp, n))
+    return pd.concat(result).reset_index()
 
 
 class Scanner:
@@ -178,7 +183,7 @@ class Scanner:
     :type output: str
     """
 
-    def __init__(self, cutoff, output):
+    def __init__(self, cutoff, output=None):
         """Constructor for Scanner"""
         self.cutoff = cutoff
         self.output = output
@@ -208,29 +213,30 @@ class Scanner:
         :rtype: Iterable
         """
         if verbose:
-            logger.info("Beginning Scanner")
-        self._result = (
-            pd.DataFrame(
-                [
-                    [read.chrom, read.start, read.end, read.strand, read.score, *info]
-                    for read in junctionmap
-                    for info in read.information
-                    if read.score >= self.cutoff
-                ],
-                columns=[
-                    "chrom",
-                    "start",
-                    "end",
-                    "strand",
-                    "score",
-                    "type",
-                    "dk",
-                    "ak",
-                    "gene",
-                ],
-            )
-            .pipe(lambda df: df.groupby(["strand", "type"]))
-            .pipe(find_ce)
-        )
+            logger.info(f"Chrom {junctionmap.chrom} Scanner Beginning ")
 
-        return self._result
+        groups = pd.DataFrame(
+            [
+                [read.chrom, read.start, read.end, read.strand, read.score, *info]
+                for read in junctionmap
+                for info in read.information
+                if read.score >= self.cutoff
+            ],
+            columns=[
+                "chrom",
+                "start",
+                "end",
+                "strand",
+                "score",
+                "type",
+                "dk",
+                "ak",
+                "gene",
+            ],
+        ).pipe(lambda df: df.groupby(["strand", "type"]))
+
+        junctionmap.result = find_ce(groups)
+
+        if verbose:
+            logger.info(f"Chrom {junctionmap.chrom} Scanner Finished")
+        return junctionmap

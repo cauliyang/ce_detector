@@ -28,9 +28,8 @@ class Annotator:
     :type output: TestIo
     """
 
-    def __init__(self, junctionmap, database: Any, output=None):
+    def __init__(self, database: Any, output=None):
         """Constructor of Annotator"""
-        self.junctionMap = junctionmap
         self.database = gffutils.FeatureDB(database)
         self.output = output
 
@@ -150,7 +149,7 @@ class Annotator:
                 )
 
     @timethis(name="Junction Annotator", message="FINISHED")
-    def run(self, logger, verbose=False):
+    def run(self, junctionmap, logger, verbose=False):
         """main function used to annotate junction reads
 
         pick all genes covered by one junction read and annotate all of them:
@@ -162,7 +161,9 @@ class Annotator:
 
         # logger.info(f'Begin to annotate junctions!')
 
-        for _index, read in enumerate(self.junctionMap):
+        for _index, read in enumerate(junctionmap):
             self.annotate_junction(read, result, self.database)
             if verbose and _index % 1000 == 0:
-                logger.info(f"{_index} Reads Finished")
+                logger.info(f"Chrom {junctionmap.chrom} {_index} Reads Finished")
+
+        return junctionmap

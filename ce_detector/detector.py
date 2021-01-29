@@ -7,11 +7,7 @@ import time
 
 import pysam as ps
 
-from .utils import get_yaml
 from .utils import timethis
-
-# change keys to be consist with chromosome's values
-CHROMS = get_yaml()["chr2hg38"]
 
 
 class Read:
@@ -84,8 +80,17 @@ class Read:
 class JunctionMap:
     """build a class to store information of all junction reads"""
 
-    def __init__(self):
+    def __init__(self, chrom):
+        self.chrom = chrom
         self.junctionList = {}
+        self.result = None
+
+    def is_empty(self):
+
+        if len(self.junctionList):
+            return False
+        else:
+            return True
 
     def add_read(self, read):
         """add read to  junctionlist
@@ -118,6 +123,9 @@ class JunctionMap:
     def __iter__(self):
         """iterate every read in junctionlist"""
         return iter(self.junctionList.values())
+
+    def __repr__(self):
+        return f"ce_detector.detector.JunctionMap(chrom = {self.chrom})"
 
     def write2file(self, output, header=None):
         """write all reads in junctionlist to file
@@ -160,11 +168,9 @@ class JunctionDetector:
 
     def __init__(self, bam_file, reference, quality, output=None):
 
-        self.bam_file, self.output = bam_file, output
+        self.bam, self.reference = ps.AlignmentFile(bam_file), ps.FastaFile(reference)
 
-        self.reference = reference
-
-        self.quality = quality
+        self.output, self.quality = output, quality
 
     @staticmethod
     def check_strand(anchor, acceptor):
@@ -182,7 +188,7 @@ class JunctionDetector:
 
         return strand
 
-    def worker(self, bam_file, reference, chrom, quality, idn, junctionmap):
+    def worker(self, bam_file, reference, chrom, ann_chrom, quality, idn, junctionmap):
         """find junction reads and annotate slice site
 
         :param bam_file: handle of bam_file
@@ -212,7 +218,7 @@ class JunctionDetector:
         # annotate slice sites
         for ((start, end), score) in junction_regions.items():
             junction_bases = reference.fetch(
-                reference=CHROMS[chrom],
+                reference=ann_chrom,
                 start=start,
                 end=end,  # change chrom
             )
@@ -224,8 +230,10 @@ class JunctionDetector:
 
             idn += 1
 
-    @timethis(name="Junction detector", message="FINISHED")
-    def run(self, logger, verbose=False):
+        return junctionmap
+
+    @timethis(name="Junction detector", message=" ")
+    def run(self, chrom, ann_chrom, logger, verbose=False):
         """detect junction reads and annotate slice site, write results to file
 
         :return: instance from junctionmap
@@ -234,23 +242,21 @@ class JunctionDetector:
 
         idn = 0
 
-        reference = ps.FastaFile(self.reference)
-
-        bam = ps.AlignmentFile(self.bam_file)
-
-        junctionmap = JunctionMap()
+        junctionmap = JunctionMap(chrom)
 
         # write junction reads information
-        for chrom in CHROMS.keys():  # change CHROMS
-            if verbose:
-                logger.info(f"Chrom {chrom} Beginning")
-                start = time.time()
-            self.worker(bam, reference, chrom, self.quality, idn, junctionmap)
+        if verbose:
+            logger.info(f"Chrom {chrom} Beginning")
+            start = time.time()
 
-            if verbose:
-                logger.info(f"Chrom {chrom} Finished {time.time() - start:.2f}s")
+        junctionmap = self.worker(
+            self.bam, self.reference, chrom, ann_chrom, self.quality, idn, junctionmap
+        )
 
-        if self.output:
-            junctionmap.write2file(self.output)  # write to file
+        if verbose:
+            logger.info(f"Chrom {chrom} Finished {time.time() - start:.2f}s")
+        #
+        # if self.output:
+        #     junctionmap.write2file(self.output)  # write to file
 
         return junctionmap
