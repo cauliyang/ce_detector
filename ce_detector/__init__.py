@@ -3,7 +3,7 @@
 
 __author__ = "YangyangLi"
 __email__ = "li002252@umn.edu "
-__version__ = "0.1.13"
+__version__ = "0.2.0"
 
 # from .annotator import Annotator
 # from .ce_scanner import Scanner
