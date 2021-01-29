@@ -148,7 +148,7 @@ class Annotator:
                     f"{read}\t{reads_type}\t{donors_skipped}\t{acceptors_skipped}\t{gene}\n",
                 )
 
-    @timethis(name="Junction Annotator", message="FINISHED")
+    @timethis(name="Junction Annotator", message=" ")
     def run(self, junctionmap, logger, verbose=False):
         """main function used to annotate junction reads
 

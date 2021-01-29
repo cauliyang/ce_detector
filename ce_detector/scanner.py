@@ -146,31 +146,35 @@ def find_ce(groups) -> Iterable:
     result = []
 
     for strand in ("+", "-"):
-        da = groups.get_group((strand, "DA"))
-        d = groups.get_group((strand, "D"))
-        a = groups.get_group((strand, "A"))
-        n = groups.get_group((strand, "N"))
-
-        temp = (
-            da.merge(
-                d,
-                left_on=["chrom", "start", "gene"],
-                right_on=["chrom", "start", "gene"],
-                suffixes=("_DA", "_D"),
+        try:
+            da = groups.get_group((strand, "DA"))
+            d = groups.get_group((strand, "D"))
+            a = groups.get_group((strand, "A"))
+            n = groups.get_group((strand, "N"))
+        except KeyError as exc:
+            raise exc
+        else:
+            temp = (
+                da.merge(
+                    d,
+                    left_on=["chrom", "start", "gene"],
+                    right_on=["chrom", "start", "gene"],
+                    suffixes=("_DA", "_D"),
+                )
+                .merge(
+                    a,
+                    left_on=["chrom", "end_DA", "gene"],
+                    right_on=["chrom", "end", "gene"],
+                    suffixes=("", "_A"),
+                )[lambda df: df["end_D"] < df["start_A"]]
+                .pipe(lambda df: df.loc[:, pick_col])
+                .rename(columns=dict(zip(pick_col, rename_col)))
+                .assign(length=lambda df: df.end - df.start)
+                .assign(children="")
             )
-            .merge(
-                a,
-                left_on=["chrom", "end_DA", "gene"],
-                right_on=["chrom", "end", "gene"],
-                suffixes=("", "_A"),
-            )[lambda df: df["end_D"] < df["start_A"]]
-            .pipe(lambda df: df.loc[:, pick_col])
-            .rename(columns=dict(zip(pick_col, rename_col)))
-            .assign(length=lambda df: df.end - df.start)
-            .assign(children="")
-        )
 
-        result.append(split_ce(temp, n))
+            result.append(split_ce(temp, n))
+
     return pd.concat(result).reset_index()
 
 
@@ -235,7 +239,10 @@ class Scanner:
             ],
         ).pipe(lambda df: df.groupby(["strand", "type"]))
 
-        junctionmap.result = find_ce(groups)
+        try:
+            junctionmap.result = find_ce(groups)
+        except KeyError as exc:
+            logger.warn(f"Chrom {junctionmap.chrom} KeyError {exc.args[0]}")
 
         if verbose:
             logger.info(f"Chrom {junctionmap.chrom} Scanner Finished")
