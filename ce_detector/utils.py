@@ -1,6 +1,8 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import logging
 import time
+from concurrent import futures
 from functools import partial
 from functools import wraps
 from os.path import dirname
@@ -207,9 +209,17 @@ def timethis(
         with Timer() as t:
             temp = func(*args, logger=log, **kwargs)
 
-        # log.debug(f"[bold green]{logmsg} CONSUMING {t.elapsed:.2f}s")
         _ = f"{t} {logmsg}"
 
         return temp
 
     return wrapper
+
+
+def get_worker(handler):
+    worker = (
+        futures.ProcessPoolExecutor()
+        if handler
+        else futures.ThreadPoolExecutor(max_workers=24)
+    )
+    return worker

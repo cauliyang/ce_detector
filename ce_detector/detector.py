@@ -3,9 +3,12 @@
 """class for detecting junction reads
 
 """
+import re
 import time
 
+import numpy as np
 import pysam as ps
+from statsmodels.stats.multitest import fdrcorrection
 
 from .utils import timethis
 
@@ -42,13 +45,15 @@ class Read:
         "anchor",
         "acceptor",
         "information",
+        "pvalue",
     )
 
-    def __init__(self, chrom, start, end, idn, score, strand, anchor, acceptor):
+    def __init__(self, chrom, start, end, idn, score, strand, anchor, acceptor, pvalue):
         self.chrom, self.start, self.end = chrom, start, end
         self.idn, self.score, self.strand = idn, score, strand
         self.anchor, self.acceptor = anchor, acceptor
         self.information = []
+        self.pvalue = pvalue
 
     @property
     def identifiers(self):
@@ -82,15 +87,31 @@ class JunctionMap:
 
     def __init__(self, chrom):
         self.chrom = chrom
-        self.junctionList = {}
+        self._junctionList = []
         self.result = None
+
+    @classmethod
+    def build(cls, chrom, data):
+        new_instance = cls(chrom)
+        new_instance.add_data(data)
+        return new_instance
+
+    def add_data(self, data):
+        self._junctionList = data
+
+    @property
+    def data(self):
+        return self._junctionList
 
     def is_empty(self):
 
-        if len(self.junctionList):
+        if len(self._junctionList):
             return False
         else:
             return True
+
+    def size(self):
+        return len(self._junctionList)
 
     def add_read(self, read):
         """add read to  junctionlist
@@ -98,31 +119,22 @@ class JunctionMap:
         :param read: instance from Read
         :type read: instance
         """
-        self.junctionList[read.identifiers] = read
+        self._junctionList.append(read)
 
-    def get_read(self, identifiers):
-        """get read from junctionlist according to identifiers
-
-        :param identifiers: identifier for every read: chrom_start_end
-        :type identifiers: int
-        :return: instance from Read
-        :rtype: instance
-        """
-        return self.junctionList[identifiers]
-
-    def __contains__(self, identifiers):
+    def __contains__(self, read):
         """check if read is in junctionlist according to identifiers
 
-        :param identifiers: identifier for every read: chrom_start_end
-        :type identifiers: str
+        :type read: object
+
         :return: whether Read is in JunctionMap
         :rtype: bool
         """
-        return identifiers in self.junctionList
+        return read in self._junctionList
 
     def __iter__(self):
         """iterate every read in junctionlist"""
-        return iter(self.junctionList.values())
+        for item in self._junctionList:
+            yield item
 
     def __repr__(self):
         return f"ce_detector.detector.JunctionMap(chrom = {self.chrom})"
@@ -166,6 +178,8 @@ class JunctionDetector:
         dict(zip([("CT", "AC"), ("GT", "AT"), ("CT", "GC")], "---"))
     )  # negative site
 
+    PATTERN = re.compile(r"\d*?S*(\d+)M(\d+)N(\d+)M")
+
     def __init__(self, bam_file, reference, quality, output=None):
 
         self.bam, self.reference = ps.AlignmentFile(bam_file), ps.FastaFile(reference)
@@ -188,9 +202,52 @@ class JunctionDetector:
 
         return strand
 
+    @staticmethod
+    def fdr_correction(junctionmaps):
+        chroms = junctionmaps.keys()
+        junctionmaps_len = [jmap.size() for jmap in junctionmaps.values()]
+        split_ind = np.cumsum(junctionmaps_len)[:-1]
+        all_pvalues = np.array(
+            [read.pvalue for jmap in junctionmaps.values() for read in jmap]
+        )
+        cond, fdr = fdrcorrection(all_pvalues)
+        cond_pvalue = np.split(cond, split_ind)
+
+        for ind, chrom in enumerate(chroms):
+            data = np.array(junctionmaps[chrom].data)[cond_pvalue[ind]]
+            junctionmaps[chrom] = JunctionMap.build(chrom, data.tolist())
+
+        return junctionmaps
+
+    def get_pvalue(self, chrom, start, end):
+
+        jun_reads = self.bam.fetch(contig=chrom, start=start, end=end)
+        max_ratio = float("-inf")
+        max_info = tuple()
+
+        for read in jun_reads:
+
+            if "N" in read.cigarstring and read.mapping_quality > self.quality:
+
+                block1, gap, block2 = map(
+                    int, self.PATTERN.search(read.cigarstring).groups()
+                )
+                block_ratio = min(block1, block2) / max(block1, block2)
+                if block_ratio > max_ratio:
+                    max_ratio = block_ratio
+                    max_info = (block1, gap, block2)
+
+        R = min(max_info[0], max_info[-1])
+        L = max_info[1]
+        p_value = 1 - (1 - (1 / 4) ** R) ** (L - R + 1)
+
+        return max_info, p_value
+
     def worker(self, bam_file, reference, chrom, ann_chrom, quality, idn, junctionmap):
         """find junction reads and annotate slice site
 
+        :param ann_chrom:
+        :type ann_chrom:
         :param bam_file: handle of bam_file
         :type bam_file: instance
         :param reference: handle of reference
@@ -223,9 +280,11 @@ class JunctionDetector:
                 end=end,  # change chrom
             )
             anchor, acceptor = junction_bases[:2].upper(), junction_bases[-2:].upper()
-
             strand = self.check_strand(anchor, acceptor)
-            read = Read(chrom, start, end, idn + 1, score, strand, anchor, acceptor)
+            _, p_value = self.get_pvalue(chrom, start, end)
+            read = Read(
+                chrom, start, end, idn + 1, score, strand, anchor, acceptor, p_value
+            )
             junctionmap.add_read(read)
 
             idn += 1
@@ -255,8 +314,5 @@ class JunctionDetector:
 
         if verbose:
             logger.info(f"Chrom {chrom} Finished {time.time() - start:.2f}s")
-        #
-        # if self.output:
-        #     junctionmap.write2file(self.output)  # write to file
 
         return junctionmap

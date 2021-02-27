@@ -164,6 +164,6 @@ class Annotator:
         for _index, read in enumerate(junctionmap):
             self.annotate_junction(read, result, self.database)
             if verbose and _index % 1000 == 0:
-                logger.info(f"Chrom {junctionmap.chrom} {_index} Reads Finished")
+                logger.info(f"Chrom {junctionmap.chrom} {_index} Reads")
 
         return junctionmap

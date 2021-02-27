@@ -16,8 +16,12 @@ import pandas as pd
 from rich.traceback import install
 
 from . import __version__
+from .detector import JunctionDetector
+from .main import detection
 from .main import main
+from .utils import get_worker
 from .utils import get_yaml
+
 
 install()
 
@@ -173,27 +177,34 @@ def detect(ctx, bam, reference, quality, gffdb, cutoff, out, parallel):
     verbose = ctx.obj["verbose"]
 
     # change keys to be consist with chromosome's values
-    CHROMS = get_yaml()["chr2hg38"]
+    chroms: dict = get_yaml()["chr2hg38"]
 
-    worker = (
-        futures.ProcessPoolExecutor()
-        if parallel
-        else futures.ThreadPoolExecutor(max_workers=24)
-    )
-
-    tasks = []
-    junctionmaps = []
-    with worker as executor:
-        for chrom, ann_chrom in CHROMS.items():
+    tasks = {}
+    junctionmaps = {}
+    with get_worker(parallel) as executor:
+        for chrom, ann_chrom in chroms.items():
             future = executor.submit(
-                main, chrom, ann_chrom, bam, reference, quality, gffdb, cutoff, verbose
+                detection, chrom, ann_chrom, bam, reference, quality, verbose
             )
-            tasks.append(future)
+            tasks[future] = chrom
         for future in futures.as_completed(tasks):
-            junctionmaps.append(future.result())
+            junctionmaps[tasks[future]] = future.result()
+
+    fdr_junctionmaps = JunctionDetector.fdr_correction(junctionmaps)
+
+    tasks = {}
+    result = {}
+    with get_worker(parallel) as executor:
+        for chrom, jmap in fdr_junctionmaps.items():
+            future = executor.submit(main, jmap, gffdb, cutoff, verbose)
+            tasks[future] = chrom
+        for future in futures.as_completed(tasks):
+            result[tasks[future]] = future.result()
+
+    sorted_result = [result[chrom] for chrom in chroms]
 
     final_result = [
-        jmap.result for jmap in junctionmaps if isinstance(jmap.result, pd.DataFrame)
+        jmap.result for jmap in sorted_result if isinstance(jmap.result, pd.DataFrame)
     ]
     pd.concat(final_result).to_csv(out, sep="\t", encoding="utf8", index=False)
 

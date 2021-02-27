@@ -13,29 +13,7 @@ from .detector import JunctionDetector
 from .scanner import Scanner
 
 
-def main(chrom, ann_chrom, bam, reference, quality, gffdb, cutoff, verbose):
-    """
-    :param chrom:
-    :type chrom:
-    :param ann_chrom:
-    :type ann_chrom:
-    :param bam:
-    :type bam:
-    :param reference:
-    :type reference:
-    :param quality:
-    :type quality:
-    :param gffdb:
-    :type gffdb:
-    :param cutoff:
-    :type cutoff:
-    :param out:
-    :type out:
-    :param verbose:
-    :type verbose:
-    :return:
-    :rtype:
-    """
+def detection(chrom, ann_chrom, bam, reference, quality, verbose):
     detector = JunctionDetector(
         bam,
         reference,
@@ -43,6 +21,22 @@ def main(chrom, ann_chrom, bam, reference, quality, gffdb, cutoff, verbose):
     )
     junctionmap = detector.run(chrom=chrom, ann_chrom=ann_chrom, verbose=verbose)
 
+    return junctionmap
+
+
+def main(junctionmap, gffdb, cutoff, verbose):
+    """
+    :param junctionmap:
+    :type junctionmap:
+    :param gffdb:
+    :type gffdb:
+    :param cutoff:
+    :type cutoff:
+    :param verbose:
+    :type verbose:
+    :return:
+    :rtype:
+    """
     annotator = Annotator(gffdb)
     scanner = Scanner(cutoff=cutoff)
 
@@ -51,5 +45,3 @@ def main(chrom, ann_chrom, bam, reference, quality, gffdb, cutoff, verbose):
         junctionmap = scanner.run(junctionmap, verbose=verbose)
 
     return junctionmap
-
-    # scanner.write2file(verbose=verbose)
